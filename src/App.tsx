@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
-// import yfinance from 'yahoo-finance2';
 import './App.css';
 
 interface Contract {
