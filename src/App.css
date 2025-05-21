@@ -50,3 +50,7 @@
   min-width: 300;
   margin: 0 auto 32px auto;
 }
+
+h1 {
+  text-align: center;
+}

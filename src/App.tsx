@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
+import { Spinner, Button, Input } from '@fluentui/react-components';
 import './App.css';
 
 interface Contract {
@@ -245,19 +246,36 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <h1>Stock Options Scatter Charts</h1>
-      <div style={{ marginBottom: 16 }}>
-        <label htmlFor="api-key-input">Financial Modeling Prep API Key: </label>
-        <input
-          id="api-key-input"
-          type="text"
-          value={apiKey}
-          onChange={e => setApiKey(e.target.value)}
-          placeholder="Enter your FMP API key"
-          style={{ width: 320 }}
-        />
-      </div>
-      <input type="file" accept=".txt" onChange={handleFile} />
-      {loading && <p>Loading...</p>}
+      {!charts.length && (
+        <>
+          <div style={{ marginBottom: 16 }}>
+            <label htmlFor="api-key-input">Financial Modeling Prep API Key: </label>
+            <Input
+              id="api-key-input"
+              type="text"
+              value={apiKey}
+              onChange={(_, data) => setApiKey(data.value)}
+              placeholder="Enter your FMP API key"
+              style={{ width: 320 }}
+            />
+          </div>
+          <input
+            id="file-input"
+            type="file"
+            accept=".txt"
+            style={{ display: 'none' }}
+            onChange={handleFile}
+          />
+          <Button 
+            appearance="primary" 
+            onClick={() => document.getElementById('file-input')?.click()} 
+            style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+          >
+            Upload Contracts
+          </Button>
+        </>
+      )}
+      {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
       {charts.map(chart => (
         <div key={chart.ticker} className="chart-container" style={{ width: '85vw', minWidth: 300, margin: '0 auto' }}>
           <h2>{chart.ticker}</h2>
