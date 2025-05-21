@@ -1,5 +1,7 @@
 body {
   background: transparent;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
@@ -72,4 +74,36 @@ h1 {
 
 .main-svg {
   background: transparent !important;
+}
+
+.office-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background: #0F6CBD; /* fallback, matches officeBrand[80] */
+  color: white;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+  margin-bottom: 32px;
+  min-height: 56px;
+  z-index: 1000;
+  justify-content: center;
+}
+.office-header img {
+  position: absolute;
+  left: 32px;
+}
+.office-header h1, .office-header .fui-Title3 {
+  margin: 0 auto;
+  text-align: center;
+  flex: 0 1 auto;
+}
+
+/* Add padding to the top of the main content to prevent it from being hidden under the fixed header */
+.main-content {
+  padding-top: 68px; /* header height + margin */
 }

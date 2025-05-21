@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { Spinner, Button, Input } from '@fluentui/react-components';
+import type { BrandVariants } from '@fluentui/react-components';
+import { createLightTheme, FluentProvider, Title3 } from '@fluentui/react-components';
 import './App.css';
 
 interface Contract {
@@ -183,6 +185,26 @@ function generateChartData(
   return { ticker, plotData, layout };
 }
 
+const officeBrand: BrandVariants = {
+  10: '#061724',
+  20: '#082338',
+  30: '#0A2E4A',
+  40: '#0C3B5E',
+  50: '#0E4775',
+  60: '#0F548C',
+  70: '#115EA3',
+  80: '#0F6CBD',
+  90: '#2886DE',
+  100: '#479EF5',
+  110: '#62ABF5',
+  120: '#77B7F7',
+  130: '#96C6FA',
+  140: '#B4D6FA',
+  150: '#CFE4FA',
+  160: '#EBF3FC',
+};
+const officeTheme = createLightTheme(officeBrand);
+
 const App: React.FC = () => {
   const [charts, setCharts] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -243,54 +265,58 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="App">
-      <h1>Stock Options Scatter Charts</h1>
-      {!charts.length && (
-        <>
-          <div style={{ marginBottom: 16 }}>
-            <label htmlFor="api-key-input">Financial Modeling Prep API Key: </label>
-            <Input
-              id="api-key-input"
-              type="text"
-              value={apiKey}
-              onChange={(_, data) => setApiKey(data.value)}
-              placeholder="Enter your FMP API key"
-              style={{ width: 320 }}
+    <FluentProvider theme={officeTheme} style={{ minHeight: '100vh' }}>
+      <header className="office-header">
+        <img src="/vite.svg" alt="App Logo" style={{ height: 32 }} />
+        <Title3 as="h1" style={{ color: 'white', fontWeight: 600, letterSpacing: 0.5, margin: 0, flex: '0 1 auto' }}>Stock Options Scatter Charts</Title3>
+      </header>
+      <div className="main-content">
+        {!charts.length && (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <label htmlFor="api-key-input">Financial Modeling Prep API Key: </label>
+              <Input
+                id="api-key-input"
+                type="text"
+                value={apiKey}
+                onChange={(_, data) => setApiKey(data.value)}
+                placeholder="Enter your FMP API key"
+                style={{ width: 320 }}
+              />
+            </div>
+            <input
+              id="file-input"
+              type="file"
+              accept=".txt"
+              style={{ display: 'none' }}
+              onChange={handleFile}
             />
-          </div>
-          <input
-            id="file-input"
-            type="file"
-            accept=".txt"
-            style={{ display: 'none' }}
-            onChange={handleFile}
-          />
-          <Button 
-            appearance="primary" 
-            onClick={() => document.getElementById('file-input')?.click()} 
-            style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
-          >
-            Upload Contracts
-          </Button>
-        </>
-      )}
-      {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
-      <div className="charts-list">
-        {charts.map(chart => (
-          //<div key={chart.ticker} className="chart-container" style={{ width: '85vw', minWidth: 300, margin: '0 auto' }}>
-          <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
-            <h2>{chart.ticker}</h2>
-            <Plot 
-              data={chart.plotData} 
-              layout={chart.layout} 
-              style={{ width: '100%', minHeight: 400 }} 
-              useResizeHandler={true}
-              className="responsive-plot"
-            />
-          </div>
-        ))}
+            <Button 
+              appearance="primary" 
+              onClick={() => document.getElementById('file-input')?.click()} 
+              style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+            >
+              Upload Contracts
+            </Button>
+          </>
+        )}
+        {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
+        <div className="charts-list">
+          {charts.map(chart => (
+            <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
+              <h2>{chart.ticker}</h2>
+              <Plot 
+                data={chart.plotData} 
+                layout={chart.layout} 
+                style={{ width: '100%', minHeight: 400 }} 
+                useResizeHandler={true}
+                className="responsive-plot"
+              />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </FluentProvider>
   );
 };
 
