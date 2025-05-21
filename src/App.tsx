@@ -157,13 +157,12 @@ function generateChartData(
     ? (priceChangePct < 0 ? 'red' : 'green')
     : undefined;
 
-
   const layout = {
     title: {
-      text: `${ticker} Options (${priceChangePct !== undefined ? (priceChangePct >= 0 ? '+' : '') + priceChangePct.toFixed(2) + '%' : ''})`,
+      text: `${ticker} Options ($${closingPrice.toFixed(2)}, ${priceChangePct !== undefined ? (priceChangePct >= 0 ? '+' : '') + priceChangePct.toFixed(2) + '%' : ''})`,
       // Use HTML for colored percentage if supported
       ...(priceChangePct !== undefined && {
-        text: `${ticker} Options (<span style="color:${pctColor}">${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%</span>)`,
+        text: `${ticker} Options ($${closingPrice.toFixed(2)}, <span style="color:${pctColor}">${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%</span>)`,
       })
     },
     xaxis: {
@@ -276,18 +275,21 @@ const App: React.FC = () => {
         </>
       )}
       {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
-      {charts.map(chart => (
-        <div key={chart.ticker} className="chart-container" style={{ width: '85vw', minWidth: 300, margin: '0 auto' }}>
-          <h2>{chart.ticker}</h2>
-          <Plot 
-            data={chart.plotData} 
-            layout={chart.layout} 
-            style={{ width: '100%', minHeight: 400 }} 
-            useResizeHandler={true}
-            className="responsive-plot"
-          />
-        </div>
-      ))}
+      <div className="charts-list">
+        {charts.map(chart => (
+          //<div key={chart.ticker} className="chart-container" style={{ width: '85vw', minWidth: 300, margin: '0 auto' }}>
+          <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
+            <h2>{chart.ticker}</h2>
+            <Plot 
+              data={chart.plotData} 
+              layout={chart.layout} 
+              style={{ width: '100%', minHeight: 400 }} 
+              useResizeHandler={true}
+              className="responsive-plot"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
