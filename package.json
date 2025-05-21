@@ -1,0 +1,19 @@
+{
+  "name": "stock-options-chart",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "build": "tsc && cp contracts.txt dist/contracts.txt",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "yahoo-finance2": "^2.12.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/express": "^4.17.13",
+    "@types/node": "^20.0.0"
+  }
+}
