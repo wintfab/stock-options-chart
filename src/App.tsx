@@ -21,9 +21,9 @@ import type { BrandVariants } from "@fluentui/react-components";
 import {
     createLightTheme,
     FluentProvider,
-    Title3,
 } from "@fluentui/react-components";
 import "./App.css";
+import OfficeHeader from "./OfficeHeader";
 
 interface Contract {
     ticker: string;
@@ -430,21 +430,7 @@ const App: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <header className="office-header">
-                    <img src="/vite.svg" alt="App Logo" style={{ height: 32 }} />
-                    <Title3
-                        as="h1"
-                        style={{
-                            color: "white",
-                            fontWeight: 600,
-                            letterSpacing: 0.5,
-                            margin: 0,
-                            flex: "0 1 auto",
-                        }}
-                    >
-                        Stock Options Scatter Charts
-                    </Title3>
-                </header>
+                <OfficeHeader />
                 <div className="main-content">
                     {!charts.length && (
                         <>
