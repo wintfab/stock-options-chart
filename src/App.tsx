@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Plot from "react-plotly.js";
 import {
-    Spinner,
     Button,
     Input,
     Label,
@@ -25,6 +24,7 @@ import "./App.css";
 import OfficeHeader from "./OfficeHeader";
 import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
+import Loading from "./Loading";
 
 interface Contract {
     ticker: string;
@@ -409,11 +409,7 @@ const App: React.FC = () => {
                             </Button>
                         </>
                     )}
-                    {loading && (
-                        <div style={{ marginTop: 16 }}>
-                            <Spinner label="Loading chart data..." />
-                        </div>
-                    )}
+                    {loading && <Loading />}
                     <div className="charts-list">
                         {charts.map((chart) => (
                             <div
