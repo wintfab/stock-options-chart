@@ -476,11 +476,18 @@ const App: React.FC = () => {
                                     key={chart.ticker}
                                     className="chart-container"
                                     style={{
-                                        width: "100%",
+                                        width: "min(900px, 98vw)", // Limit max width for legend, responsive
+                                        minWidth: 320,
                                         height: "400px",
-                                        minWidth: 300,
-                                        margin: "0 auto",
+                                        margin: "0 auto 32px auto", // Add spacing between charts
                                         position: "relative",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        background: "#fff",
+                                        borderRadius: 8,
+                                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                        boxSizing: "border-box",
                                     }}
                                 >
                                     <div
@@ -506,13 +513,15 @@ const App: React.FC = () => {
                                             </MenuPopover>
                                         </Menu>
                                     </div>
-                                    <Plot
-                                        data={chart.plotData}
-                                        layout={chart.layout}
-                                        style={{ width: "100%", minHeight: 400, marginTop: -10 }}
-                                        useResizeHandler={true}
-                                        className="responsive-plot"
-                                    />
+                                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Plot
+                                            data={chart.plotData}
+                                            layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
+                                            style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
+                                            useResizeHandler={true}
+                                            className="responsive-plot"
+                                        />
+                                    </div>
                                 </div>
                             ))}
                         </div>
