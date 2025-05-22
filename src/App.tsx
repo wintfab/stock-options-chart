@@ -27,6 +27,7 @@ import OfficeHeader from "./OfficeHeader";
 import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
+import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 
 interface Contract {
     ticker: string;
@@ -43,38 +44,6 @@ interface ChartData {
 
 const API_KEY_CACHE_KEY = "fmp_api_key_cache";
 
-const getToday = (): string => {
-    const d = new Date();
-    return d.toISOString().slice(0, 10); // YYYY-MM-DD
-};
-
-function parseContractLine(line: string): Contract | null {
-    // Example: TSLA250523P00315000
-    const regex = /^([A-Z]+)(\d{6})([CP])(\d{8})$/;
-
-    const match = line.match(regex);
-    if (!match) return null;
-
-    const [, ticker, dateStr, type, strikeStr] = match;
-
-    // Parse date (YYMMDD -> YYYY-MM-DD) in local time zone
-    const year = 2000 + parseInt(dateStr.slice(0, 2), 10);
-    const month = parseInt(dateStr.slice(2, 4), 10) - 1; // JS months are 0-based
-    const day = parseInt(dateStr.slice(4, 6), 10);
-    const expiration = new Date(year, month, day); // Local time zone
-
-    // Parse strike price (e.g., 00280000 -> 280.00)
-    const strike = parseInt(strikeStr) / 1000;
-
-    return {
-        ticker,
-        expiration,
-        type: type === "C" ? "CALL" : "PUT",
-        strike,
-    };
-}
-
-// Update fetchQuote to accept apiKey
 async function fetchQuote(ticker: string, apiKey: string) {
     const key = apiKey || "demo";
     const url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${key}`;
@@ -112,8 +81,6 @@ async function getTickerInfo(ticker: string, apiKey: string): Promise<{ price: n
     }
 }
 
-const getReferenceDate = (): Date => new Date();
-
 function generateChartData(
     ticker: string,
     contracts: Contract[],
@@ -123,10 +90,6 @@ function generateChartData(
     // ...implement similar to your backend logic...
     // For brevity, this is a placeholder
     // Calculate days until expiration and filter for natural numbers
-    const calculateDaysUntilExpiration = (expiration: Date): number => {
-        const diffTime = expiration.getTime() - getReferenceDate().getTime();
-        return Math.round(diffTime / (1000 * 60 * 60 * 24)); // Convert ms to days and round
-    };
 
     // Filter contracts to ensure days is a natural number (>= 0)
     const validContracts = contracts.filter((c) => {
@@ -316,9 +279,8 @@ const App: React.FC = () => {
     // Filtering logic for contracts/charts
     const filterContracts = (contracts: Contract[]): Contract[] => {
         if (filter === "none") return contracts;
-        const now = new Date();
         return contracts.filter(c => {
-            const days = Math.round((c.expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            const days = calculateDaysUntilExpiration(c.expiration);
             if (filter === "week") return days >= 0 && days <= 7;
             if (filter === "month") return days >= 0 && days <= 31;
             return true;
