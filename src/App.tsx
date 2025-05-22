@@ -87,6 +87,31 @@ async function fetchQuote(ticker: string, apiKey: string) {
     };
 }
 
+// Helper to get today's price and changePct for a ticker, with localStorage caching
+async function getTickerInfo(ticker: string, apiKey: string): Promise<{ price: number; changePct: number }> {
+    const today = getToday();
+    const cacheKey = `fmp_quote_cache_${ticker}`;
+    let cached = null;
+    try {
+        const raw = localStorage.getItem(cacheKey);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.date === today && typeof parsed.price === 'number' && typeof parsed.changePct === 'number') {
+                cached = parsed;
+            }
+        }
+    } catch {}
+    if (cached) {
+        return { price: cached.price, changePct: cached.changePct };
+    } else {
+        const fetchedTicket = await fetchQuote(ticker, apiKey);
+        if (fetchedTicket.price !== 0 && fetchedTicket.changePct !== 0) {
+            localStorage.setItem(cacheKey, JSON.stringify({ date: today, price: fetchedTicket.price, changePct: fetchedTicket.changePct }));
+        }
+        return fetchedTicket;
+    }
+}
+
 const getReferenceDate = (): Date => new Date();
 
 function generateChartData(
@@ -310,7 +335,7 @@ const App: React.FC = () => {
         const tickers = Array.from(new Set(contracts.map((c) => c.ticker)));
         const tickerData: Record<string, { price: number; changePct: number }> = {};
         for (const ticker of tickers) {
-            tickerData[ticker] = await fetchQuote(ticker, apiKey);
+            tickerData[ticker] = await getTickerInfo(ticker, apiKey);
         }
         const contractsByTicker: Record<string, Contract[]> = {};
         for (const c of contracts) {
