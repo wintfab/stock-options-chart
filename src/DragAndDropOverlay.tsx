@@ -1,3 +1,5 @@
+// Copyright (c) 2025 fwinter. All rights reserved.
+
 import React from "react";
 import { Attach24Regular } from "@fluentui/react-icons";
 

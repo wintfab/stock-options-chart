@@ -1,3 +1,5 @@
+// Copyright (c) 2025 fwinter. All rights reserved.
+
 import React from "react";
 import { Title3 } from "@fluentui/react-components";
 

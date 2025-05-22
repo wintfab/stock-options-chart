@@ -1,3 +1,5 @@
+// Copyright (c) 2025 fwinter. All rights reserved.
+
 import React from "react";
 import Plot from "react-plotly.js";
 import { Button } from "@fluentui/react-components";

@@ -1,3 +1,5 @@
+// Copyright (c) 2025 fwinter. All rights reserved.
+
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";

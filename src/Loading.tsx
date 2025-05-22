@@ -1,3 +1,5 @@
+// Copyright (c) 2025 fwinter. All rights reserved.
+
 import React from "react";
 import { Spinner } from "@fluentui/react-components";
 
