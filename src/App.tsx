@@ -57,11 +57,11 @@ function parseContractLine(line: string): Contract | null {
 
     const [, ticker, dateStr, type, strikeStr] = match;
 
-    // Parse date (YYMMDD -> YYYY-MM-DD)
-    const year = `20${dateStr.slice(0, 2)}`;
-    const month = dateStr.slice(2, 4);
-    const day = dateStr.slice(4, 6);
-    const expiration = new Date(`${year}-${month}-${day}`);
+    // Parse date (YYMMDD -> YYYY-MM-DD) in local time zone
+    const year = 2000 + parseInt(dateStr.slice(0, 2), 10);
+    const month = parseInt(dateStr.slice(2, 4), 10) - 1; // JS months are 0-based
+    const day = parseInt(dateStr.slice(4, 6), 10);
+    const expiration = new Date(year, month, day); // Local time zone
 
     // Parse strike price (e.g., 00280000 -> 280.00)
     const strike = parseInt(strikeStr) / 1000;
@@ -128,10 +128,10 @@ function generateChartData(
         return Math.round(diffTime / (1000 * 60 * 60 * 24)); // Convert ms to days and round
     };
 
-    // Filter contracts to ensure days is a natural number (> 0)
+    // Filter contracts to ensure days is a natural number (>= 0)
     const validContracts = contracts.filter((c) => {
         const days = calculateDaysUntilExpiration(c.expiration);
-        return days > 0 && Number.isInteger(days);
+        return days >= 0 && Number.isInteger(days);
     });
 
     const calls = validContracts.filter((c) => c.type === "CALL");
