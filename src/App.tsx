@@ -410,6 +410,7 @@ const App: React.FC = () => {
                                     id="api-key-input"
                                     type="text"
                                     value={apiKey}
+                                    disabled={loading}
                                     onChange={(_, data) => setApiKey(data.value)}
                                     placeholder="Enter your FMP API key"
                                     style={{ width: 320 }}
@@ -425,6 +426,7 @@ const App: React.FC = () => {
                             <Button
                                 appearance="primary"
                                 onClick={() => document.getElementById("file-input")?.click()}
+                                disabled={loading}
                                 style={{
                                     marginBottom: 16,
                                     display: "block",
