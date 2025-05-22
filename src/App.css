@@ -114,7 +114,7 @@ h1 {
 
 /* Add padding to the top of the main content to prevent it from being hidden under the fixed header */
 .main-content {
-    padding-top: 68px;
+    padding-top: 24px;
     /* header height + margin */
 }
 
