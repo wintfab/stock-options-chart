@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
-import { Spinner, Button, Input } from '@fluentui/react-components';
+import { Spinner, Button, Input, Label, Link } from '@fluentui/react-components';
 import type { BrandVariants } from '@fluentui/react-components';
 import { createLightTheme, FluentProvider, Title3 } from '@fluentui/react-components';
 import './App.css';
@@ -143,7 +143,7 @@ function generateChartData(
 
   // Expand the line by 1 day on each side
   const priceLine = {
-    x: [0, maxDays + 1],
+    x: [0, maxDays],
     y: [closingPrice, closingPrice],
     mode: 'lines',
     type: 'scatter',
@@ -169,12 +169,16 @@ function generateChartData(
     },
     xaxis: {
       title: 'Days Until Expiration',
+      autorange: true,
       type: 'linear',
       tickmode: 'array',
       tickvals: uniqueDays, // Only show unique days as ticks
       range: [0, Math.max(...uniqueDays, 1) + 1] // Always start at 0
     },
-    yaxis: { title: 'Strike Price ($)' },
+    yaxis: { 
+      title: 'Strike Price ($)',
+      autorange: true
+    },
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -274,7 +278,10 @@ const App: React.FC = () => {
         {!charts.length && (
           <>
             <div style={{ marginBottom: 16 }}>
-              <label htmlFor="api-key-input">Financial Modeling Prep API Key: </label>
+              <Label htmlFor="api-key-input">
+                Financial Modeling{' '}
+                <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">API Key</Link>{' '}
+              </Label>
               <Input
                 id="api-key-input"
                 type="text"
@@ -308,7 +315,7 @@ const App: React.FC = () => {
               <Plot 
                 data={chart.plotData} 
                 layout={chart.layout} 
-                style={{ width: '100%', minHeight: 400 }} 
+                style={{ width: '100%', minHeight: 400, marginTop: -10 }} 
                 useResizeHandler={true}
                 className="responsive-plot"
               />

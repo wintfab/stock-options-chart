@@ -1,6 +1,6 @@
 # Stock Options Chart (Frontend)
 
-This is a Vite + React + TypeScript frontend-only application for visualizing stock options charts.
+This is a TypeScript frontend-only application for visualizing stock options charts.
 
 ## Features
 
@@ -34,6 +34,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 - Click the upload button to select your `contracts.txt` file.
 - The app will parse the contracts, fetch data, and display charts for each ticker.
+- Get the financial modeling API key from https://site.financialmodelingprep.com/developer/docs/dashboard
 
 ## Project Structure
 
