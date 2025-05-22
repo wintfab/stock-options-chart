@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
-import { Spinner, Button, Input, Label, Link } from '@fluentui/react-components';
-import { Attach24Regular } from '@fluentui/react-icons';
+import { Spinner, Button, Input, Label, Link, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
+import { Attach24Regular, MoreHorizontal24Regular, FullScreenMaximize24Regular } from '@fluentui/react-icons';
 import type { BrandVariants } from '@fluentui/react-components';
 import { createLightTheme, FluentProvider, Title3 } from '@fluentui/react-components';
 import './App.css';
@@ -216,6 +216,7 @@ const App: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [dragEnabled, setDragEnabled] = useState(false);
+  const [fullscreenChart, setFullscreenChart] = useState<ChartData | null>(null);
 
   // On mount, try to load API key from cache for today
   useEffect(() => {
@@ -239,6 +240,18 @@ const App: React.FC = () => {
       );
     }
   }, [apiKey]);
+
+  // Handle Esc key to close fullscreen chart
+  useEffect(() => {
+    if (!fullscreenChart) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setFullscreenChart(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [fullscreenChart]);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -320,6 +333,42 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+        {/* Fullscreen Chart Modal */}
+        {fullscreenChart && (
+          <div className="fullscreen-modal" onClick={() => setFullscreenChart(null)}>
+            <div className="fullscreen-modal-inner" onClick={e => e.stopPropagation()}>
+              <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, display: 'flex', gap: 8 }}>
+                <Button icon={<FullScreenMaximize24Regular />} appearance="subtle" onClick={() => setFullscreenChart(null)} aria-label="Close Full Screen" />
+              </div>
+              <Plot
+                data={fullscreenChart.plotData}
+                layout={{
+                  ...fullscreenChart.layout,
+                  autosize: true,
+                  width: undefined,
+                  height: undefined,
+                  paper_bgcolor: '#181c24',
+                  plot_bgcolor: '#181c24',
+                  legend: {
+                    ...fullscreenChart.layout.legend,
+                    bgcolor: '#a3a7ae',
+                  },
+                  xaxis: {
+                    ...fullscreenChart.layout.xaxis,
+                    gridcolor: '#8d9198', // lighter grid for dark bg
+                  },
+                  yaxis: {
+                    ...fullscreenChart.layout.yaxis,
+                    gridcolor: '#8d9198', // lighter grid for dark bg
+                  }
+                }}
+                style={{ width: '90vw', height: '90vh', minHeight: 500 }}
+                useResizeHandler={true}
+                className="responsive-plot"
+              />
+            </div>
+          </div>
+        )}
         <header className="office-header">
           <img src="/vite.svg" alt="App Logo" style={{ height: 32 }} />
           <Title3 as="h1" style={{ color: 'white', fontWeight: 600, letterSpacing: 0.5, margin: 0, flex: '0 1 auto' }}>Stock Options Scatter Charts</Title3>
@@ -360,12 +409,26 @@ const App: React.FC = () => {
           {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
           <div className="charts-list">
             {charts.map(chart => (
-              <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
+              <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                  <Menu>
+                    <MenuTrigger disableButtonEnhancement>
+                      <Button icon={<MoreHorizontal24Regular />} appearance="subtle" size="small" />
+                    </MenuTrigger>
+                    <MenuPopover>
+                      <MenuList>
+                        <MenuItem icon={<FullScreenMaximize24Regular />} onClick={() => setFullscreenChart(chart)}>
+                          Show Full Screen
+                        </MenuItem>
+                      </MenuList>
+                    </MenuPopover>
+                  </Menu>
+                </div>
                 <h2>{chart.ticker}</h2>
-                <Plot 
-                  data={chart.plotData} 
-                  layout={chart.layout} 
-                  style={{ width: '100%', minHeight: 400, marginTop: -10 }} 
+                <Plot
+                  data={chart.plotData}
+                  layout={chart.layout}
+                  style={{ width: '100%', minHeight: 400, marginTop: -10 }}
                   useResizeHandler={true}
                   className="responsive-plot"
                 />
