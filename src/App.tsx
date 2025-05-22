@@ -274,9 +274,9 @@ const App: React.FC = () => {
     const [apiKey, setApiKey] = useState("");
     const [dragActive, setDragActive] = useState(false);
     const [dragEnabled, setDragEnabled] = useState(false);
-    const [fullscreenChart, setFullscreenChart] = useState<ChartData | null>(
-        null,
-    );
+    const [fullscreenChart, setFullscreenChart] = useState<ChartData | null>(null);
+    const [filter, setFilter] = useState<string>("none");
+    const [lastContractsText, setLastContractsText] = useState<string | null>(null);
 
     // On mount, try to load API key from cache for today
     useEffect(() => {
@@ -313,6 +313,25 @@ const App: React.FC = () => {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [fullscreenChart]);
 
+    // Filtering logic for contracts/charts
+    const filterContracts = (contracts: Contract[]): Contract[] => {
+        if (filter === "none") return contracts;
+        const now = new Date();
+        return contracts.filter(c => {
+            const days = Math.round((c.expiration.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            if (filter === "week") return days >= 0 && days <= 7;
+            if (filter === "month") return days >= 0 && days <= 31;
+            return true;
+        });
+    };
+
+    // When filter changes, reload contracts if already loaded
+    useEffect(() => {
+        if (!lastContractsText) return;
+        loadContractsData(lastContractsText, true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filter]);
+
     const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -321,10 +340,12 @@ const App: React.FC = () => {
         await loadContractsData(text);
     };
 
-    const loadContractsData = async (text: string) => {
+    // Accepts a second arg to skip setting lastContractsText (for filter refresh)
+    const loadContractsData = async (text: string, skipSetLast?: boolean) => {
         setLoading(true);
         setCharts([]); // Remove all charts before reloading
         setDragEnabled(true); // Enable drag after first load
+        if (!skipSetLast) setLastContractsText(text);
         const lines = text
             .split("\n")
             .map((l) => l.trim())
@@ -332,26 +353,35 @@ const App: React.FC = () => {
         const contracts = lines
             .map(parseContractLine)
             .filter(Boolean) as Contract[];
-        const tickers = Array.from(new Set(contracts.map((c) => c.ticker)));
-        const tickerData: Record<string, { price: number; changePct: number }> = {};
-        for (const ticker of tickers) {
-            tickerData[ticker] = await getTickerInfo(ticker, apiKey);
-        }
+
+        // Group contracts by ticker
         const contractsByTicker: Record<string, Contract[]> = {};
         for (const c of contracts) {
             if (!contractsByTicker[c.ticker]) contractsByTicker[c.ticker] = [];
             contractsByTicker[c.ticker].push(c);
         }
         // Sort tickers ascending
-        const sortedTickers = tickers.slice().sort((a, b) => a.localeCompare(b));
-        const chartData = sortedTickers.map((ticker) =>
-            generateChartData(
-                ticker,
-                contractsByTicker[ticker],
-                tickerData[ticker].price,
-                tickerData[ticker].changePct,
-            ),
-        );
+        const sortedTickers = Object.keys(contractsByTicker).sort((a, b) => a.localeCompare(b));
+        // Filter contracts for each ticker
+        const filteredByTicker: Record<string, Contract[]> = {};
+        for (const ticker of sortedTickers) {
+            const filtered = filterContracts(contractsByTicker[ticker]);
+            if (filtered.length > 0) filteredByTicker[ticker] = filtered;
+        }
+        // Only fetch tickerData for tickers with filtered contracts
+        const tickerData: Record<string, { price: number; changePct: number }> = {};
+        for (const ticker of Object.keys(filteredByTicker)) {
+            tickerData[ticker] = await getTickerInfo(ticker, apiKey);
+        }
+        const chartData = Object.keys(filteredByTicker)
+            .map((ticker) =>
+                generateChartData(
+                    ticker,
+                    filteredByTicker[ticker],
+                    tickerData[ticker].price,
+                    tickerData[ticker].changePct,
+                ),
+            );
         setCharts(chartData);
         setLoading(false);
     };
@@ -384,109 +414,111 @@ const App: React.FC = () => {
 
     return (
         <FluentProvider theme={officeTheme} style={{ minHeight: "100vh" }}>
-            <DragAndDropOverlay
-                dragActive={dragActive}
-                dragEnabled={dragEnabled}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <FullscreenChartModal
-                    fullscreenChart={fullscreenChart}
-                    onClose={() => setFullscreenChart(null)}
-                />
-                <OfficeHeader />
-                <div className="main-content">
-                    {!charts.length && (
-                        <>
-                            <div style={{ marginBottom: 16 }}>
-                                <Label htmlFor="api-key-input">
-                                    Financial Modeling{" "}
-                                    <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
-                                        API Key
-                                    </Link>{" "}
-                                </Label>
-                                <Input
-                                    id="api-key-input"
-                                    type="text"
-                                    value={apiKey}
-                                    disabled={loading}
-                                    onChange={(_, data) => setApiKey(data.value)}
-                                    placeholder="Enter your FMP API key"
-                                    style={{ width: 320 }}
-                                />
-                            </div>
-                            <input
-                                id="file-input"
-                                type="file"
-                                accept=".txt"
-                                style={{ display: "none" }}
-                                onChange={handleFile}
-                            />
-                            <Button
-                                appearance="primary"
-                                onClick={() => document.getElementById("file-input")?.click()}
-                                disabled={loading}
-                                style={{
-                                    marginBottom: 16,
-                                    display: "block",
-                                    marginLeft: "auto",
-                                    marginRight: "auto",
-                                }}
-                            >
-                                Upload Contracts
-                            </Button>
-                        </>
-                    )}
-                    {loading && <Loading />}
-                    <div className="charts-list">
-                        {charts.map((chart) => (
-                            <div
-                                key={chart.ticker}
-                                className="chart-container"
-                                style={{
-                                    width: "100%",
-                                    height: "400px",
-                                    minWidth: 300,
-                                    margin: "0 auto",
-                                    position: "relative",
-                                }}
-                            >
-                                <div
-                                    style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
-                                >
-                                    <Menu>
-                                        <MenuTrigger disableButtonEnhancement>
-                                            <Button
-                                                icon={<MoreHorizontal24Regular />}
-                                                appearance="subtle"
-                                                size="small"
-                                            />
-                                        </MenuTrigger>
-                                        <MenuPopover>
-                                            <MenuList>
-                                                <MenuItem
-                                                    icon={<FullScreenMaximize24Regular />}
-                                                    onClick={() => setFullscreenChart(chart)}
-                                                >
-                                                    Show Full Screen
-                                                </MenuItem>
-                                            </MenuList>
-                                        </MenuPopover>
-                                    </Menu>
+            <OfficeHeader filter={filter} setFilter={setFilter} />
+            <div style={{ paddingTop: 68, position: "relative" }}>
+                <DragAndDropOverlay
+                    dragActive={dragActive}
+                    dragEnabled={dragEnabled}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                >
+                    <FullscreenChartModal
+                        fullscreenChart={fullscreenChart}
+                        onClose={() => setFullscreenChart(null)}
+                    />
+                    <div className="main-content">
+                        {!charts.length && (
+                            <>
+                                <div style={{ marginBottom: 16 }}>
+                                    <Label htmlFor="api-key-input">
+                                        Financial Modeling{" "}
+                                        <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
+                                            API Key
+                                        </Link>{" "}
+                                    </Label>
+                                    <Input
+                                        id="api-key-input"
+                                        type="text"
+                                        value={apiKey}
+                                        disabled={loading}
+                                        onChange={(_, data) => setApiKey(data.value)}
+                                        placeholder="Enter your FMP API key"
+                                        style={{ width: 320 }}
+                                    />
                                 </div>
-                                <Plot
-                                    data={chart.plotData}
-                                    layout={chart.layout}
-                                    style={{ width: "100%", minHeight: 400, marginTop: -10 }}
-                                    useResizeHandler={true}
-                                    className="responsive-plot"
+                                <input
+                                    id="file-input"
+                                    type="file"
+                                    accept=".txt"
+                                    style={{ display: "none" }}
+                                    onChange={handleFile}
                                 />
-                            </div>
-                        ))}
+                                <Button
+                                    appearance="primary"
+                                    onClick={() => document.getElementById("file-input")?.click()}
+                                    disabled={loading}
+                                    style={{
+                                        marginBottom: 16,
+                                        display: "block",
+                                        marginLeft: "auto",
+                                        marginRight: "auto",
+                                    }}
+                                >
+                                    Upload Contracts
+                                </Button>
+                            </>
+                        )}
+                        {loading && <Loading />}
+                        <div className="charts-list">
+                            {charts.map((chart) => (
+                                <div
+                                    key={chart.ticker}
+                                    className="chart-container"
+                                    style={{
+                                        width: "100%",
+                                        height: "400px",
+                                        minWidth: 300,
+                                        margin: "0 auto",
+                                        position: "relative",
+                                    }}
+                                >
+                                    <div
+                                        style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
+                                    >
+                                        <Menu>
+                                            <MenuTrigger disableButtonEnhancement>
+                                                <Button
+                                                    icon={<MoreHorizontal24Regular />}
+                                                    appearance="subtle"
+                                                    size="small"
+                                                />
+                                            </MenuTrigger>
+                                            <MenuPopover>
+                                                <MenuList>
+                                                    <MenuItem
+                                                        icon={<FullScreenMaximize24Regular />}
+                                                        onClick={() => setFullscreenChart(chart)}
+                                                    >
+                                                        Show Full Screen
+                                                    </MenuItem>
+                                                </MenuList>
+                                            </MenuPopover>
+                                        </Menu>
+                                    </div>
+                                    <Plot
+                                        data={chart.plotData}
+                                        layout={chart.layout}
+                                        style={{ width: "100%", minHeight: 400, marginTop: -10 }}
+                                        useResizeHandler={true}
+                                        className="responsive-plot"
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </DragAndDropOverlay>
+                </DragAndDropOverlay>
+            </div>
         </FluentProvider>
     );
 };
