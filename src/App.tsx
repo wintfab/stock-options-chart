@@ -13,7 +13,6 @@ import {
     MenuItem,
 } from "@fluentui/react-components";
 import {
-    Attach24Regular,
     MoreHorizontal24Regular,
     FullScreenMaximize24Regular,
 } from "@fluentui/react-icons";
@@ -25,6 +24,7 @@ import {
 import "./App.css";
 import OfficeHeader from "./OfficeHeader";
 import FullscreenChartModal from "./FullscreenChartModal";
+import DragAndDropOverlay from "./DragAndDropOverlay";
 
 interface Contract {
     ticker: string;
@@ -357,25 +357,13 @@ const App: React.FC = () => {
 
     return (
         <FluentProvider theme={officeTheme} style={{ minHeight: "100vh" }}>
-            <div
-                onDragOver={dragEnabled ? handleDragOver : undefined}
-                onDragLeave={dragEnabled ? handleDragLeave : undefined}
-                onDrop={dragEnabled ? handleDrop : undefined}
-                style={{ position: "relative", minHeight: "100vh" }}
+            <DragAndDropOverlay
+                dragActive={dragActive}
+                dragEnabled={dragEnabled}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
             >
-                {dragActive && dragEnabled && (
-                    <div className="drag-overlay">
-                        <div className="drag-overlay-inner">
-                            <Attach24Regular
-                                style={{ fontSize: 64, color: "#fff", marginBottom: 16 }}
-                            />
-                            <div className="drag-overlay-text">
-                                Drop your <b>.txt</b> file here
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {/* Fullscreen Chart Modal */}
                 <FullscreenChartModal
                     fullscreenChart={fullscreenChart}
                     onClose={() => setFullscreenChart(null)}
@@ -473,7 +461,7 @@ const App: React.FC = () => {
                         ))}
                     </div>
                 </div>
-            </div>
+            </DragAndDropOverlay>
         </FluentProvider>
     );
 };
