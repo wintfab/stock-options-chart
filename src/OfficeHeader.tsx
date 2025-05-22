@@ -14,7 +14,7 @@ const OfficeHeader: React.FC = () => (
                 flex: "0 1 auto",
             }}
         >
-            Stock Options Scatter Charts
+            Stock Options Analysis
         </Title3>
     </header>
 );
