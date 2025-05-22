@@ -28,6 +28,9 @@ import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
+import { TickerDataController } from "./TickerDataController";
+
+const API_KEY_CACHE_KEY = "fmp_api_key_cache";
 
 interface Contract {
     ticker: string;
@@ -40,45 +43,6 @@ interface ChartData {
     ticker: string;
     plotData: any[];
     layout: any;
-}
-
-const API_KEY_CACHE_KEY = "fmp_api_key_cache";
-
-async function fetchQuote(ticker: string, apiKey: string) {
-    const key = apiKey || "demo";
-    const url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${key}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const quote = data[0];
-    return {
-        price: quote?.price ?? 0,
-        changePct: quote?.changesPercentage ?? 0,
-    };
-}
-
-// Helper to get today's price and changePct for a ticker, with localStorage caching
-async function getTickerInfo(ticker: string, apiKey: string): Promise<{ price: number; changePct: number }> {
-    const today = getToday();
-    const cacheKey = `fmp_quote_cache_${ticker}`;
-    let cached = null;
-    try {
-        const raw = localStorage.getItem(cacheKey);
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed.date === today && typeof parsed.price === 'number' && typeof parsed.changePct === 'number') {
-                cached = parsed;
-            }
-        }
-    } catch {}
-    if (cached) {
-        return { price: cached.price, changePct: cached.changePct };
-    } else {
-        const fetchedTicket = await fetchQuote(ticker, apiKey);
-        if (fetchedTicket.price !== 0 && fetchedTicket.changePct !== 0) {
-            localStorage.setItem(cacheKey, JSON.stringify({ date: today, price: fetchedTicket.price, changePct: fetchedTicket.changePct }));
-        }
-        return fetchedTicket;
-    }
 }
 
 function generateChartData(
@@ -333,7 +297,7 @@ const App: React.FC = () => {
         // Only fetch tickerData for tickers with filtered contracts
         const tickerData: Record<string, { price: number; changePct: number }> = {};
         for (const ticker of Object.keys(filteredByTicker)) {
-            tickerData[ticker] = await getTickerInfo(ticker, apiKey);
+            tickerData[ticker] = await TickerDataController.getTickerInfo(ticker, apiKey);
         }
         const chartData = Object.keys(filteredByTicker)
             .map((ticker) =>
