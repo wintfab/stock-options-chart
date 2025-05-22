@@ -169,7 +169,7 @@ function generateChartData(
       })
     },
     xaxis: {
-      title: 'Days Until Expiration',
+      title: { text: 'Days Until Expiration' },
       autorange: true,
       type: 'linear',
       tickmode: 'array',
@@ -177,7 +177,7 @@ function generateChartData(
       range: [0, Math.max(...uniqueDays, 1) + 1] // Always start at 0
     },
     yaxis: { 
-      title: 'Strike Price ($)',
+      title: { text: 'Strike Price ($)' },
       autorange: true
     },
     display: "flex",
