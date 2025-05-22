@@ -29,12 +29,12 @@ const getToday = (): string => {
 function parseContractLine(line: string): Contract | null {
   // Example: TSLA250523P00315000
   const regex = /^([A-Z]+)(\d{6})([CP])(\d{8})$/
-  
+
   const match = line.match(regex);
   if (!match) return null;
-  
+
   const [, ticker, dateStr, type, strikeStr] = match;
-  
+
   // Parse date (YYMMDD -> YYYY-MM-DD)
   const year = `20${dateStr.slice(0, 2)}`;
   const month = dateStr.slice(2, 4);
@@ -162,10 +162,10 @@ function generateChartData(
 
   const layout = {
     title: {
-      text: `${ticker} Options ($${closingPrice.toFixed(2)}, ${priceChangePct !== undefined ? (priceChangePct >= 0 ? '+' : '') + priceChangePct.toFixed(2) + '%' : ''})`,
-      // Use HTML for colored percentage if supported
+      text: `<span style="font-size: 18px; font-weight: bold;">${ticker}</span> ($${closingPrice.toFixed(2)}, ${priceChangePct !== undefined ? (priceChangePct >= 0 ? '+' : '') + priceChangePct.toFixed(2) + '%' : ''})`,
+      // Use HTML for colored percentage and H2-styled ticker if supported
       ...(priceChangePct !== undefined && {
-        text: `${ticker} Options ($${closingPrice.toFixed(2)}, <span style="color:${pctColor}">${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%</span>)`,
+        text: `<span style="font-size: 18px; font-weight: bold;">${ticker}</span> ($${closingPrice.toFixed(2)}, <span style="color:${pctColor}">${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%</span>)`,
       })
     },
     xaxis: {
@@ -176,7 +176,7 @@ function generateChartData(
       tickvals: uniqueDays, // Only show unique days as ticks
       range: [0, Math.max(...uniqueDays, 1) + 1] // Always start at 0
     },
-    yaxis: { 
+    yaxis: {
       title: { text: 'Strike Price ($)' },
       autorange: true
     },
@@ -227,7 +227,7 @@ const App: React.FC = () => {
         if (cache.date === getToday() && cache.key) {
           setApiKey(cache.key);
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -397,16 +397,16 @@ const App: React.FC = () => {
                 style={{ display: 'none' }}
                 onChange={handleFile}
               />
-              <Button 
-                appearance="primary" 
-                onClick={() => document.getElementById('file-input')?.click()} 
+              <Button
+                appearance="primary"
+                onClick={() => document.getElementById('file-input')?.click()}
                 style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
               >
                 Upload Contracts
               </Button>
             </>
           )}
-          {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
+          {loading && <div style={{ marginTop: 16 }}><Spinner label="Loading chart data..." /></div>}
           <div className="charts-list">
             {charts.map(chart => (
               <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto', position: 'relative' }}>
@@ -424,7 +424,6 @@ const App: React.FC = () => {
                     </MenuPopover>
                   </Menu>
                 </div>
-                <h2>{chart.ticker}</h2>
                 <Plot
                   data={chart.plotData}
                   layout={chart.layout}
