@@ -107,3 +107,37 @@ h1 {
 .main-content {
   padding-top: 68px; /* header height + margin */
 }
+
+.drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(20, 24, 32, 0.75);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px dashed #6c6e74; /* darker dashed border for the full overlay */
+  box-sizing: border-box;
+}
+
+.drag-overlay-inner {
+  pointer-events: none;
+  border: 3px dashed #222c3a;
+  background: rgba(30, 34, 44, 0.95);
+  border-radius: 18px;
+  padding: 48px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+}
+
+.drag-overlay-text {
+  color: #fff;
+  font-size: 1.25rem;
+  margin-top: 8px;
+  text-align: center;
+}

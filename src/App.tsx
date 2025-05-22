@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { Spinner, Button, Input, Label, Link } from '@fluentui/react-components';
+import { Attach24Regular } from '@fluentui/react-icons';
 import type { BrandVariants } from '@fluentui/react-components';
 import { createLightTheme, FluentProvider, Title3 } from '@fluentui/react-components';
 import './App.css';
@@ -213,6 +214,8 @@ const App: React.FC = () => {
   const [charts, setCharts] = useState<ChartData[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [dragActive, setDragActive] = useState(false);
+  const [dragEnabled, setDragEnabled] = useState(false);
 
   // On mount, try to load API key from cache for today
   useEffect(() => {
@@ -242,6 +245,13 @@ const App: React.FC = () => {
     if (!file) return;
     setLoading(true);
     const text = await file.text();
+    await loadContractsData(text);
+  };
+
+  const loadContractsData = async (text: string) => {
+    setLoading(true);
+    setCharts([]); // Remove all charts before reloading
+    setDragEnabled(true); // Enable drag after first load
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     const contracts = lines.map(parseContractLine).filter(Boolean) as Contract[];
     const tickers = Array.from(new Set(contracts.map(c => c.ticker)));
@@ -268,59 +278,100 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
+  // Overlay drag-and-drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer.files[0];
+    if (!file || file.type !== 'text/plain' && !file.name.endsWith('.txt')) {
+      alert('Please drop a .txt file.');
+      return;
+    }
+    const text = await file.text();
+    await loadContractsData(text);
+  };
+
   return (
     <FluentProvider theme={officeTheme} style={{ minHeight: '100vh' }}>
-      <header className="office-header">
-        <img src="/vite.svg" alt="App Logo" style={{ height: 32 }} />
-        <Title3 as="h1" style={{ color: 'white', fontWeight: 600, letterSpacing: 0.5, margin: 0, flex: '0 1 auto' }}>Stock Options Scatter Charts</Title3>
-      </header>
-      <div className="main-content">
-        {!charts.length && (
-          <>
-            <div style={{ marginBottom: 16 }}>
-              <Label htmlFor="api-key-input">
-                Financial Modeling{' '}
-                <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">API Key</Link>{' '}
-              </Label>
-              <Input
-                id="api-key-input"
-                type="text"
-                value={apiKey}
-                onChange={(_, data) => setApiKey(data.value)}
-                placeholder="Enter your FMP API key"
-                style={{ width: 320 }}
-              />
+      <div
+        onDragOver={dragEnabled ? handleDragOver : undefined}
+        onDragLeave={dragEnabled ? handleDragLeave : undefined}
+        onDrop={dragEnabled ? handleDrop : undefined}
+        style={{ position: 'relative', minHeight: '100vh' }}
+      >
+        {dragActive && dragEnabled && (
+          <div className="drag-overlay">
+            <div className="drag-overlay-inner">
+              <Attach24Regular style={{ fontSize: 64, color: '#fff', marginBottom: 16 }} />
+              <div className="drag-overlay-text">Drop your <b>.txt</b> file here</div>
             </div>
-            <input
-              id="file-input"
-              type="file"
-              accept=".txt"
-              style={{ display: 'none' }}
-              onChange={handleFile}
-            />
-            <Button 
-              appearance="primary" 
-              onClick={() => document.getElementById('file-input')?.click()} 
-              style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
-            >
-              Upload Contracts
-            </Button>
-          </>
+          </div>
         )}
-        {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
-        <div className="charts-list">
-          {charts.map(chart => (
-            <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
-              <h2>{chart.ticker}</h2>
-              <Plot 
-                data={chart.plotData} 
-                layout={chart.layout} 
-                style={{ width: '100%', minHeight: 400, marginTop: -10 }} 
-                useResizeHandler={true}
-                className="responsive-plot"
+        <header className="office-header">
+          <img src="/vite.svg" alt="App Logo" style={{ height: 32 }} />
+          <Title3 as="h1" style={{ color: 'white', fontWeight: 600, letterSpacing: 0.5, margin: 0, flex: '0 1 auto' }}>Stock Options Scatter Charts</Title3>
+        </header>
+        <div className="main-content">
+          {!charts.length && (
+            <>
+              <div style={{ marginBottom: 16 }}>
+                <Label htmlFor="api-key-input">
+                  Financial Modeling{' '}
+                  <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">API Key</Link>{' '}
+                </Label>
+                <Input
+                  id="api-key-input"
+                  type="text"
+                  value={apiKey}
+                  onChange={(_, data) => setApiKey(data.value)}
+                  placeholder="Enter your FMP API key"
+                  style={{ width: 320 }}
+                />
+              </div>
+              <input
+                id="file-input"
+                type="file"
+                accept=".txt"
+                style={{ display: 'none' }}
+                onChange={handleFile}
               />
-            </div>
-          ))}
+              <Button 
+                appearance="primary" 
+                onClick={() => document.getElementById('file-input')?.click()} 
+                style={{ marginBottom: 16, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+              >
+                Upload Contracts
+              </Button>
+            </>
+          )}
+          {loading && <div style={{marginTop: 16}}><Spinner label="Loading chart data..." /></div>}
+          <div className="charts-list">
+            {charts.map(chart => (
+              <div key={chart.ticker} className="chart-container" style={{ width: '100%', height: '400px', minWidth: 300, margin: '0 auto' }}>          
+                <h2>{chart.ticker}</h2>
+                <Plot 
+                  data={chart.plotData} 
+                  layout={chart.layout} 
+                  style={{ width: '100%', minHeight: 400, marginTop: -10 }} 
+                  useResizeHandler={true}
+                  className="responsive-plot"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </FluentProvider>
