@@ -13,6 +13,7 @@ This is a TypeScript frontend-only application for visualizing stock options cha
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v18+ recommended)
 - npm
 

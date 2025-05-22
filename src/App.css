@@ -1,172 +1,184 @@
 body {
-  background: transparent;
-  margin: 0;
-  padding: 0;
+    background: transparent;
+    margin: 0;
+    padding: 0;
 }
 
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+    filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+    filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
 }
 
 .card {
-  padding: 2em;
+    padding: 2em;
 }
 
 .read-the-docs {
-  color: #888;
+    color: #888;
 }
 
 .chart-container {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.12), 0 1.5px 4px 0 rgba(0,0,0,0.10);
-  /* Fluent UI style: subtle elevation, bottom right shadow */
-  margin-bottom: 0;
-  padding: 24px 16px 32px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 85vw;
-  min-width: 300;
-  margin: 0 auto 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow:
+        0 4px 16px 0 rgba(0, 0, 0, 0.12),
+        0 1.5px 4px 0 rgba(0, 0, 0, 0.1);
+    /* Fluent UI style: subtle elevation, bottom right shadow */
+    margin-bottom: 0;
+    padding: 24px 16px 32px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 85vw;
+    min-width: 300;
+    margin: 0 auto 20px auto;
 }
 
 .charts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 h1 {
-  text-align: center;
+    text-align: center;
 }
 
 .main-svg {
-  background: transparent !important;
+    background: transparent !important;
 }
 
 .office-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  background: #0F6CBD; /* fallback, matches officeBrand[80] */
-  color: white;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
-  margin-bottom: 32px;
-  min-height: 56px;
-  z-index: 1000;
-  justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    background: #0f6cbd;
+    /* fallback, matches officeBrand[80] */
+    color: white;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    margin-bottom: 32px;
+    min-height: 56px;
+    z-index: 1000;
+    justify-content: center;
 }
+
 .office-header img {
-  position: absolute;
-  left: 32px;
+    position: absolute;
+    left: 32px;
 }
-.office-header h1, .office-header .fui-Title3 {
-  margin: 0 auto;
-  text-align: center;
-  flex: 0 1 auto;
+
+.office-header h1,
+.office-header .fui-Title3 {
+    margin: 0 auto;
+    text-align: center;
+    flex: 0 1 auto;
 }
 
 /* Add padding to the top of the main content to prevent it from being hidden under the fixed header */
 .main-content {
-  padding-top: 68px; /* header height + margin */
+    padding-top: 68px;
+    /* header height + margin */
 }
 
 .drag-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(20, 24, 32, 0.75);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 4px dashed #6c6e74; /* darker dashed border for the full overlay */
-  box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(20, 24, 32, 0.75);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px dashed #6c6e74;
+    /* darker dashed border for the full overlay */
+    box-sizing: border-box;
 }
 
 .drag-overlay-inner {
-  pointer-events: none;
-  border: 3px dashed #222c3a;
-  background: rgba(30, 34, 44, 0.95);
-  border-radius: 18px;
-  padding: 48px 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+    pointer-events: none;
+    border: 3px dashed #222c3a;
+    background: rgba(30, 34, 44, 0.95);
+    border-radius: 18px;
+    padding: 48px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
 .drag-overlay-text {
-  color: #fff;
-  font-size: 1.25rem;
-  margin-top: 8px;
-  text-align: center;
+    color: #fff;
+    font-size: 1.25rem;
+    margin-top: 8px;
+    text-align: center;
 }
 
 .fullscreen-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(20, 24, 32, 0.92);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(20, 24, 32, 0.92);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 .fullscreen-modal-inner {
-  position: relative;
-  background: #a3a7ae;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(100, 96, 96, 0.25);
-  padding: 32px 32px 24px 32px;
-  cursor: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    position: relative;
+    background: #a3a7ae;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(100, 96, 96, 0.25);
+    padding: 32px 32px 24px 32px;
+    cursor: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
 .fullscreen-modal .responsive-plot {
-  background: transparent !important;
+    background: transparent !important;
 }
