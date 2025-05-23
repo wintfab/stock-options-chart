@@ -1,4 +1,5 @@
 # Copyright (c) 2025 fwinter. All rights reserved.
+
 """
 Script to sign in to https://site.financialmodelingprep.com/ and extract the API key text.
 Requires: selenium, webdriver-manager
@@ -47,14 +48,16 @@ def extract_api_key(email, password):
         api_key = api_key_elem.text
         print(f"[SUCCESS] API Key extracted: {api_key}")
     except Exception as e:
-        traceback.print_exc(limit=1)
-        print(f"[ERROR] Failed to extract API key: {e.msg}")
+        if hasattr(e, 'msg'):
+            print(f"[ERROR] Failed to extract API key: {e.msg}")
+        else:
+            print(f"[ERROR] Failed to extract API key: {e}")
     finally:
         driver.quit()
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python extract_fmp_api_key.py <email> <password>")
+        print("Usage: python extract_key.py <email> <password>")
         sys.exit(1)
     print("[INFO] Starting API key extraction script...")
     extract_api_key(sys.argv[1], sys.argv[2])
