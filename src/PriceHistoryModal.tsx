@@ -74,7 +74,7 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                         />
                     </div>
                 </DialogTitle>
-                <DialogBody style={{ height: "calc(100% - 64px)" }}>
+                <DialogBody style={{ height: "calc(100% - 64px)", display: "contents" }}>
                     {loading ? (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.3 }}>
                             <img src="/vite.svg" alt="Loading ghost" style={{ width: 120, height: 120, filter: "grayscale(1)" }} />
