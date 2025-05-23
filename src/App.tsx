@@ -27,6 +27,7 @@ import OfficeHeader from "./OfficeHeader";
 import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
+import TickerError from "./TickerError";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 import { TickerDataController } from "./TickerDataController";
 
@@ -204,6 +205,7 @@ const App: React.FC = () => {
     const [fullscreenChart, setFullscreenChart] = useState<ChartData | null>(null);
     const [filter, setFilter] = useState<string>("none");
     const [lastContractsText, setLastContractsText] = useState<string | null>(null);
+    const [tickerError, setTickerError] = useState<null | { tickers: string[] }>(null);
 
     // On mount, try to load API key from cache for today
     useEffect(() => {
@@ -271,6 +273,7 @@ const App: React.FC = () => {
         setLoading(true);
         setCharts([]); // Remove all charts before reloading
         setDragEnabled(true); // Enable drag after first load
+        setTickerError(null); // Reset error state
         if (!skipSetLast) setLastContractsText(text);
         const lines = text
             .split("\n")
@@ -298,6 +301,15 @@ const App: React.FC = () => {
         const tickerData: Record<string, { price: number; changePct: number }> = {};
         for (const ticker of Object.keys(filteredByTicker)) {
             tickerData[ticker] = await TickerDataController.getTickerInfo(ticker, apiKey);
+        }
+        // Check for tickers with price $0
+        const zeroPriceTickers = Object.entries(tickerData)
+            .filter(([_, v]) => v.price === 0)
+            .map(([k]) => k);
+        if (zeroPriceTickers.length > 0) {
+            setTickerError({ tickers: zeroPriceTickers });
+            setLoading(false);
+            return;
         }
         const chartData = Object.keys(filteredByTicker)
             .map((ticker) =>
@@ -340,7 +352,7 @@ const App: React.FC = () => {
 
     return (
         <FluentProvider theme={officeTheme} style={{ minHeight: "100vh" }}>
-            <OfficeHeader filter={filter} setFilter={setFilter} disabled={!charts.length} />
+            <OfficeHeader filter={filter} setFilter={setFilter} disabled={!charts.length || !!tickerError} />
             <div style={{ paddingTop: 68, position: "relative" }}>
                 <DragAndDropOverlay
                     dragActive={dragActive}
@@ -354,103 +366,112 @@ const App: React.FC = () => {
                         onClose={() => setFullscreenChart(null)}
                     />
                     <div className="main-content">
-                        {!charts.length && (
+                        {tickerError ? (
+                            <TickerError
+                                tickers={tickerError.tickers}
+                                onRetry={() => lastContractsText && loadContractsData(lastContractsText)}
+                            />
+                        ) : (
                             <>
-                                <div style={{ marginBottom: 16 }}>
-                                    <Label htmlFor="api-key-input">
-                                        Financial Modeling{" "}
-                                        <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
-                                            API Key
-                                        </Link>{" "}
-                                    </Label>
-                                    <Input
-                                        id="api-key-input"
-                                        type="text"
-                                        value={apiKey}
-                                        disabled={loading}
-                                        onChange={(_, data) => setApiKey(data.value)}
-                                        placeholder="Enter your FMP API key"
-                                        style={{ width: 320 }}
-                                    />
+                                {!charts.length && (
+                                    <>
+                                        <div style={{ marginBottom: 16 }}>
+                                            <Label htmlFor="api-key-input">
+                                                Financial Modeling{" "}
+                                                <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
+                                                    API Key
+                                                </Link>{" "}
+                                            </Label>
+                                            <Input
+                                                id="api-key-input"
+                                                type="text"
+                                                value={apiKey}
+                                                disabled={loading}
+                                                onChange={(_, data) => setApiKey(data.value)}
+                                                placeholder="Enter your FMP API key"
+                                                style={{ width: 320 }}
+                                            />
+                                        </div>
+                                        <input
+                                            id="file-input"
+                                            type="file"
+                                            accept=".txt"
+                                            style={{ display: "none" }}
+                                            onChange={handleFile}
+                                        />
+                                        <Button
+                                            appearance="primary"
+                                            onClick={() => document.getElementById("file-input")?.click()}
+                                            disabled={loading}
+                                            style={{
+                                                marginBottom: 16,
+                                                display: "block",
+                                                marginLeft: "auto",
+                                                marginRight: "auto",
+                                            }}
+                                        >
+                                            Upload Contracts
+                                        </Button>
+                                    </>
+                                )}
+                                {loading && <Loading />}
+                                <div className="charts-list">
+                                    {charts.map((chart) => (
+                                        <div
+                                            key={chart.ticker}
+                                            className="chart-container"
+                                            style={{
+                                                width: "min(900px, 98vw)", // Limit max width for legend, responsive
+                                                minWidth: 320,
+                                                height: "400px",
+                                                margin: "0 auto 32px auto", // Add spacing between charts
+                                                position: "relative",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                background: "#fff",
+                                                borderRadius: 8,
+                                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                                boxSizing: "border-box",
+                                            }}
+                                        >
+                                            <div
+                                                style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
+                                            >
+                                                <Menu>
+                                                    <MenuTrigger disableButtonEnhancement>
+                                                        <Button
+                                                            icon={<MoreHorizontal24Regular />}
+                                                            appearance="subtle"
+                                                            size="small"
+                                                        />
+                                                    </MenuTrigger>
+                                                    <MenuPopover>
+                                                        <MenuList>
+                                                            <MenuItem
+                                                                icon={<FullScreenMaximize24Regular />}
+                                                                onClick={() => setFullscreenChart(chart)}
+                                                            >
+                                                                Show Full Screen
+                                                            </MenuItem>
+                                                        </MenuList>
+                                                    </MenuPopover>
+                                                </Menu>
+                                            </div>
+                                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Plot
+                                                    data={chart.plotData}
+                                                    layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
+                                                    style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
+                                                    useResizeHandler={true}
+                                                    className="responsive-plot"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <input
-                                    id="file-input"
-                                    type="file"
-                                    accept=".txt"
-                                    style={{ display: "none" }}
-                                    onChange={handleFile}
-                                />
-                                <Button
-                                    appearance="primary"
-                                    onClick={() => document.getElementById("file-input")?.click()}
-                                    disabled={loading}
-                                    style={{
-                                        marginBottom: 16,
-                                        display: "block",
-                                        marginLeft: "auto",
-                                        marginRight: "auto",
-                                    }}
-                                >
-                                    Upload Contracts
-                                </Button>
                             </>
                         )}
-                        {loading && <Loading />}
-                        <div className="charts-list">
-                            {charts.map((chart) => (
-                                <div
-                                    key={chart.ticker}
-                                    className="chart-container"
-                                    style={{
-                                        width: "min(900px, 98vw)", // Limit max width for legend, responsive
-                                        minWidth: 320,
-                                        height: "400px",
-                                        margin: "0 auto 32px auto", // Add spacing between charts
-                                        position: "relative",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        background: "#fff",
-                                        borderRadius: 8,
-                                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                                        boxSizing: "border-box",
-                                    }}
-                                >
-                                    <div
-                                        style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
-                                    >
-                                        <Menu>
-                                            <MenuTrigger disableButtonEnhancement>
-                                                <Button
-                                                    icon={<MoreHorizontal24Regular />}
-                                                    appearance="subtle"
-                                                    size="small"
-                                                />
-                                            </MenuTrigger>
-                                            <MenuPopover>
-                                                <MenuList>
-                                                    <MenuItem
-                                                        icon={<FullScreenMaximize24Regular />}
-                                                        onClick={() => setFullscreenChart(chart)}
-                                                    >
-                                                        Show Full Screen
-                                                    </MenuItem>
-                                                </MenuList>
-                                            </MenuPopover>
-                                        </Menu>
-                                    </div>
-                                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <Plot
-                                            data={chart.plotData}
-                                            layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
-                                            style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
-                                            useResizeHandler={true}
-                                            className="responsive-plot"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </DragAndDropOverlay>
             </div>
