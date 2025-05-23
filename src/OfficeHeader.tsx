@@ -15,6 +15,7 @@ import { Filter24Regular, CalendarWeekStart24Regular, CalendarMonth24Regular } f
 interface OfficeHeaderProps {
     filter: string;
     setFilter: (value: string) => void;
+    disabled?: boolean;
 }
 
 const filterOptions = [
@@ -35,7 +36,7 @@ const filterOptions = [
     },
 ];
 
-const OfficeHeader: React.FC<OfficeHeaderProps> = ({ filter, setFilter }) => {
+const OfficeHeader: React.FC<OfficeHeaderProps> = ({ filter, setFilter, disabled }) => {
     const selectedOption = filterOptions.find(opt => opt.value === filter) || filterOptions[0];
     return (
         <header className="office-header">
@@ -67,7 +68,7 @@ const OfficeHeader: React.FC<OfficeHeaderProps> = ({ filter, setFilter }) => {
                         }
                     }}
                 >
-                    <MenuTrigger>
+                    <MenuTrigger disableButtonEnhancement>
                         <Button
                             appearance="subtle"
                             style={{ color: "white", marginRight: 32, display: "flex", alignItems: "center", gap: 8 }}
@@ -75,6 +76,7 @@ const OfficeHeader: React.FC<OfficeHeaderProps> = ({ filter, setFilter }) => {
                             aria-haspopup="menu"
                             aria-expanded="false"
                             tabIndex={0}
+                            disabled={disabled}
                             onMouseEnter={e => (e.currentTarget.style.color = "#323130")}
                             onMouseLeave={e => (e.currentTarget.style.color = "white")}
                         >

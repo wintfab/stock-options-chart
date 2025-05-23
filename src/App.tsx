@@ -340,7 +340,7 @@ const App: React.FC = () => {
 
     return (
         <FluentProvider theme={officeTheme} style={{ minHeight: "100vh" }}>
-            <OfficeHeader filter={filter} setFilter={setFilter} />
+            <OfficeHeader filter={filter} setFilter={setFilter} disabled={!charts.length} />
             <div style={{ paddingTop: 68, position: "relative" }}>
                 <DragAndDropOverlay
                     dragActive={dragActive}
