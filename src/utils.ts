@@ -4,7 +4,11 @@
 
 export function getToday(): string {
     const d = new Date();
-    return d.toISOString().slice(0, 10); // YYYY-MM-DD
+    // Return YYYY-MM-DD in local time, not UTC
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 export function parseContractLine(line: string) {
