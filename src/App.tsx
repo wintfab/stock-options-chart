@@ -15,6 +15,7 @@ import {
 } from "@fluentui/react-components";
 import {
     MoreHorizontal24Regular,
+    GanttChart24Regular,
     FullScreenMaximize24Regular,
 } from "@fluentui/react-icons";
 import type { BrandVariants } from "@fluentui/react-components";
@@ -28,8 +29,10 @@ import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
 import TickerError from "./TickerError";
+import PriceHistoryModal from "./PriceHistoryModal";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 import { TickerDataController } from "./TickerDataController";
+import { renderChartTitleHTML } from "./ChartTitle";
 
 const API_KEY_CACHE_KEY = "fmp_api_key_cache";
 
@@ -44,6 +47,8 @@ interface ChartData {
     ticker: string;
     plotData: any[];
     layout: any;
+    closingPrice: number;
+    priceChangePct?: number;
 }
 
 function generateChartData(
@@ -52,10 +57,6 @@ function generateChartData(
     closingPrice: number,
     priceChangePct?: number,
 ): ChartData {
-    // ...implement similar to your backend logic...
-    // For brevity, this is a placeholder
-    // Calculate days until expiration and filter for natural numbers
-
     // Filter contracts to ensure days is a natural number (>= 0)
     const validContracts = contracts.filter((c) => {
         const days = calculateDaysUntilExpiration(c.expiration);
@@ -139,20 +140,9 @@ function generateChartData(
 
     const uniqueDays = Array.from(new Set(days)).sort((a, b) => a - b);
 
-    const pctColor =
-        priceChangePct !== undefined
-            ? priceChangePct < 0
-                ? "red"
-                : "green"
-            : undefined;
-
     const layout = {
         title: {
-            text: `<span style="font-size: 18px; font-weight: bold;">${ticker}</span> ($${closingPrice.toFixed(2)}, ${priceChangePct !== undefined ? (priceChangePct >= 0 ? "+" : "") + priceChangePct.toFixed(2) + "%" : ""})`,
-            // Use HTML for colored percentage and H2-styled ticker if supported
-            ...(priceChangePct !== undefined && {
-                text: `<span style="font-size: 18px; font-weight: bold;">${ticker}</span> ($${closingPrice.toFixed(2)}, <span style="color:${pctColor}">${priceChangePct >= 0 ? "+" : ""}${priceChangePct.toFixed(2)}%</span>)`,
-            }),
+            text: renderChartTitleHTML(ticker, closingPrice, priceChangePct),
         },
         xaxis: {
             title: { text: "Days Until Expiration" },
@@ -173,7 +163,7 @@ function generateChartData(
         hovermode: "closest",
     };
 
-    return { ticker, plotData, layout };
+    return { ticker, plotData, layout, closingPrice, priceChangePct };
 }
 
 const officeBrand: BrandVariants = {
@@ -206,6 +196,11 @@ const App: React.FC = () => {
     const [filter, setFilter] = useState<string>("none");
     const [lastContractsText, setLastContractsText] = useState<string | null>(null);
     const [tickerError, setTickerError] = useState<null | { tickers: string[] }>(null);
+    const [priceHistoryModal, setPriceHistoryModal] = useState<{
+        ticker: string;
+        closingPrice: number;
+        priceChangePct?: number;
+    } | null>(null);
 
     // On mount, try to load API key from cache for today
     useEffect(() => {
@@ -365,6 +360,14 @@ const App: React.FC = () => {
                         fullscreenChart={fullscreenChart}
                         onClose={() => setFullscreenChart(null)}
                     />
+                    <PriceHistoryModal
+                        ticker={priceHistoryModal?.ticker || ""}
+                        open={!!priceHistoryModal}
+                        onClose={() => setPriceHistoryModal(null)}
+                        apiKey={apiKey}
+                        closingPrice={priceHistoryModal?.closingPrice || 0}
+                        priceChangePct={priceHistoryModal?.priceChangePct}
+                    />
                     <div className="main-content">
                         {tickerError ? (
                             <TickerError
@@ -448,6 +451,19 @@ const App: React.FC = () => {
                                                     </MenuTrigger>
                                                     <MenuPopover>
                                                         <MenuList>
+                                                            <MenuItem
+                                                                icon={<GanttChart24Regular />}
+                                                                onClick={() => {
+                                                                    // Use the chart object from the map callback
+                                                                    setPriceHistoryModal({
+                                                                        ticker: chart.ticker,
+                                                                        closingPrice: chart.closingPrice,
+                                                                        priceChangePct: chart.priceChangePct
+                                                                    });
+                                                                }}
+                                                            >
+                                                                Show Price History
+                                                            </MenuItem>
                                                             <MenuItem
                                                                 icon={<FullScreenMaximize24Regular />}
                                                                 onClick={() => setFullscreenChart(chart)}

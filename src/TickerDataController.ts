@@ -53,4 +53,20 @@ export class TickerDataController {
             }
         }
     }
+
+    static async fetchPriceHistory(ticker: string, apiKey: string, cache: Record<string, any[]>): Promise<any[]> {
+        try {
+            const today = getToday();
+            const cacheKey = `fmp_history_cache_${ticker}_${today}`;
+            if (cache[cacheKey]) return cache[cacheKey];
+            const url = `https://financialmodelingprep.com/api/v3/historical-price-full/${ticker}?timeseries=90&apikey=${apiKey}`;
+            const resp = await fetch(url);
+            const json = await resp.json();
+            const data = json.historical || [];
+            return data;
+        } catch (err) {
+            console.error(`[TickerDataController.fetchPriceHistory] Error fetching price history for ${ticker}:`, err);
+            return [];
+        }
+    }
 }
