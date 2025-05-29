@@ -1,6 +1,6 @@
 // Copyright (c) 2025 fwinter. All rights reserved.
 
-import React, { useState } from "react";
+import React from "react";
 import { Title3 } from "@fluentui/react-components";
 import {
     Menu,
@@ -16,7 +16,7 @@ import {
     DialogBody,
     DialogActions,
 } from "@fluentui/react-components";
-import { Filter24Regular, CalendarWeekStart24Regular, CalendarMonth24Regular } from "@fluentui/react-icons";
+import { Filter24Regular, CalendarWeekStart24Regular, CalendarMonth24Regular, Warning20Regular } from "@fluentui/react-icons";
 
 interface OfficeHeaderProps {
     filter: string;
@@ -39,6 +39,11 @@ const filterOptions = [
         value: "month",
         label: "Expiring this month",
         icon: <CalendarMonth24Regular />,
+    },
+    {
+        value: "warning",
+        label: "At Risk",
+        icon: <Warning20Regular />,
     },
 ];
 

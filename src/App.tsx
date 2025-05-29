@@ -240,12 +240,23 @@ const App: React.FC = () => {
     // Filtering logic for contracts/charts
     const filterContracts = (contracts: Contract[]): Contract[] => {
         if (filter === "none") return contracts;
-        return contracts.filter(c => {
+        if (filter === "week") return contracts.filter(c => {
             const days = calculateDaysUntilExpiration(c.expiration);
-            if (filter === "week") return days >= 0 && days <= 7;
-            if (filter === "month") return days >= 0 && days <= 31;
-            return true;
+            return days >= 0 && days <= 7;
         });
+        if (filter === "month") return contracts.filter(c => {
+            const days = calculateDaysUntilExpiration(c.expiration);
+            return days >= 0 && days <= 31;
+        });
+        if (filter === "warning") {
+            // Only include tickers where all CALLs are below or equal to price and all PUTs are above or equal to price
+            // Need to know the closing price for this ticker
+            // Find the closing price from tickerData if available
+            // This function is called per ticker's contracts array, but we need to pass closingPrice in context
+            // We'll handle this in the chart filtering logic below, not here
+            return contracts;
+        }
+        return contracts;
     };
 
     // When filter changes, reload contracts if already loaded
@@ -306,7 +317,18 @@ const App: React.FC = () => {
             setLoading(false);
             return;
         }
-        const chartData = Object.keys(filteredByTicker)
+        // Strict filter: remove tickers that don't meet the warning criteria
+        let finalTickers = Object.keys(filteredByTicker);
+        if (filter === "warning") {
+            finalTickers = finalTickers.filter(ticker => {
+                const contracts = filteredByTicker[ticker];
+                const closingPrice = tickerData[ticker].price;
+                const hasCallBelow = contracts.some(c => c.type === "CALL" && c.strike <= closingPrice);
+                const hasPutAbove = contracts.some(c => c.type === "PUT" && c.strike > closingPrice);
+                return hasCallBelow || hasPutAbove;
+            });
+        }
+        const chartData = finalTickers
             .map((ticker) =>
                 generateChartData(
                     ticker,
