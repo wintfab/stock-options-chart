@@ -69,17 +69,17 @@ function generateChartData(
     // For calls: negative % if strike < closingPrice
     const callHover = calls.map((c) => {
         const diff = ((c.strike - closingPrice) / closingPrice) * 100;
-        // If call is below closing price, show negative value
         const pct = c.strike < closingPrice ? -Math.abs(diff) : diff;
-        return `$${c.strike.toFixed(2)}, ${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+        const expDate = c.expiration.toLocaleDateString();
+        return [expDate, `$${c.strike.toFixed(2)}`, `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`];
     });
 
     // For puts: negative % if strike > closingPrice
     const putHover = puts.map((p) => {
         const diff = ((closingPrice - p.strike) / closingPrice) * 100;
-        // If put is above closing price, show negative value
         const pct = p.strike > closingPrice ? -Math.abs(diff) : diff;
-        return `$${p.strike.toFixed(2)}, ${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+        const expDate = p.expiration.toLocaleDateString();
+        return [expDate, `$${p.strike.toFixed(2)}`, `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`];
     });
 
     // Add X symbol for calls below closing price, circle otherwise
@@ -98,8 +98,12 @@ function generateChartData(
         type: "scatter",
         name: "Call",
         marker: { color: "blue", size: 10, symbol: callSymbols },
-        text: callHover,
-        hovertemplate: "%{text}<extra></extra>",
+        customdata: callHover,
+        hovertemplate: `
+    <b>Exp:</b> %{customdata[0]} <br>
+    <b>Price:</b> %{customdata[1]} <br>
+    <b>Diff:</b> %{customdata[2]}
+    `,
     };
 
     const putTrace = {
@@ -109,8 +113,12 @@ function generateChartData(
         type: "scatter",
         name: "Put",
         marker: { color: "purple", size: 10, symbol: putSymbols },
-        text: putHover,
-        hovertemplate: "%{text}<extra></extra>",
+        customdata: putHover,
+        hovertemplate: `
+    <b>Exp:</b> %{customdata[0]} <br>
+    <b>Price:</b> %{customdata[1]} <br>
+    <b>Diff:</b> %{customdata[2]}
+    `,
     };
 
     // Closing price line spans slightly beyond min and max days to ensure visibility
@@ -130,7 +138,7 @@ function generateChartData(
         y: [closingPrice, closingPrice],
         mode: "lines",
         type: "scatter",
-        name: `Closing Price: $${closingPrice.toFixed(2)}`,
+        name: `Closing`,
         line: { color: priceLineColor, dash: "dash" },
     };
 
