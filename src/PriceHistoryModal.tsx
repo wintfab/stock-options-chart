@@ -5,7 +5,8 @@ import { Dismiss24Regular } from "@fluentui/react-icons";
 import { TickerDataController } from "./TickerDataController";
 import ChartTitle from "./ChartTitle";
 import Plot from "react-plotly.js";
-import { calculateProbabilityCones } from "./ProbabilityCone";
+import { calculateProbabilityCones } from "./ChartModels/ProbabilityCone";
+import { computeSupportResistance } from "./ChartModels/SupportResistance";
 
 interface PriceHistoryModalProps {
     ticker: string;
@@ -119,6 +120,16 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                         d.setDate(d.getDate() + i);
                                         return d;
                                     });
+                                    // --- Support/Resistance ---
+                                    // Convert data to OHLCV for computeSupportResistance
+                                    const ohlcv = data.map(d => ({
+                                        open: d.open,
+                                        high: d.high,
+                                        low: d.low,
+                                        close: d.close,
+                                        volume: d.volume ?? 0,
+                                    })).reverse(); // oldest to newest
+                                    const sr = computeSupportResistance(ohlcv, 15, 15);
                                     // Plot traces
                                     const traces = [
                                         {
@@ -179,6 +190,28 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                             hoverinfo: "skip" as const,
                                             showlegend: true,
                                         },
+                                        // Resistance levels
+                                        ...sr.resistances.map(lvl => ({
+                                            x: [data[data.length - 1 - lvl.index].date, data[0].date].map(d => new Date(d)),
+                                            y: [lvl.price, lvl.price],
+                                            type: "scatter" as const,
+                                            mode: "lines" as const,
+                                            name: "Resistance",
+                                            line: { color: "#FF0000", width: 2, dash: "dash" as const },
+                                            hoverinfo: "none" as const,
+                                            showlegend: false,
+                                        })),
+                                        // Support levels
+                                        ...sr.supports.map(lvl => ({
+                                            x: [data[data.length - 1 - lvl.index].date, data[0].date].map(d => new Date(d)),
+                                            y: [lvl.price, lvl.price],
+                                            type: "scatter" as const,
+                                            mode: "lines" as const,
+                                            name: "Support",
+                                            line: { color: "#233dee", width: 2, dash: "dot" as const },
+                                            hoverinfo: "none" as const,
+                                            showlegend: false,
+                                        })),
                                     ];
                                     return (
                                         <Plot
