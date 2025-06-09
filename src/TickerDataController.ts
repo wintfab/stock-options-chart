@@ -56,19 +56,30 @@ export class TickerDataController {
         }
     }
 
-    static async fetchPriceHistory(ticker: string, apiKey: string, cache: Record<string, any[]>): Promise<any[]> {
+    static async fetchPriceHistory(
+        ticker: string,
+        apiKey: string,
+        cache: Record<string, { history: any[]; ma52: { date: string; sma: number }[] }>
+    ): Promise<{ history: any[]; ma52: { date: string; sma: number }[] }> {
         try {
             const today = getToday();
             const cacheKey = `fmp_history_cache_${ticker}_${today}`;
             if (cache[cacheKey]) return cache[cacheKey];
-            const url = `https://financialmodelingprep.com/api/v3/historical-price-full/${ticker}?timeseries=90&apikey=${apiKey}`;
-            const resp = await fetch(url);
-            const json = await resp.json();
-            const data = json.historical || [];
-            return data;
+
+            const [historyResp, maResp] = await Promise.all([
+                fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/${ticker}?timeseries=90&apikey=${apiKey}`),
+                fetch(`https://financialmodelingprep.com/api/v3/technical_indicator/daily/${ticker}?period=52&type=sma&apikey=${apiKey}`)
+            ]);
+            const historyJson = await historyResp.json();
+            const maJson = await maResp.json();
+
+            const history = historyJson.historical || [];
+            const ma52 = Array.isArray(maJson) ? maJson : [];
+
+            return { history, ma52 };
         } catch (err) {
-            console.error(`[TickerDataController.fetchPriceHistory] Error fetching price history for ${ticker}:`, err);
-            return [];
+            console.error(`[TickerDataController.fetchPriceHistory] Error:`, err);
+            return { history: [], ma52: [] };
         }
     }
 }

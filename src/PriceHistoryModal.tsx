@@ -25,18 +25,22 @@ function getLocalDateString() {
 const FORECAST_DAYS = 30;
 
 const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onClose, apiKey, closingPrice, priceChangePct }) => {
+    // Update cache type to match fetchPriceHistory return type
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any[] | null>(null);
-    const [cache, setCache] = useState<Record<string, any[]>>({});
+    const [ma52, setMa52] = useState<{ date: string; sma: number }[]>([]);
+    const [cache, setCache] = useState<Record<string, { history: any[]; ma52: { date: string; sma: number }[] }>>({});
 
     useEffect(() => {
         if (!open) return;
         setLoading(true);
         setData(null);
+        setMa52([]);
         TickerDataController.fetchPriceHistory(ticker, apiKey, cache).then((result) => {
             const cacheKey = ticker + "_" + getLocalDateString();
             setCache((prev) => ({ ...prev, [cacheKey]: result }));
-            setData(result);
+            setData(result.history);
+            setMa52(result.ma52);
             setLoading(false);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,8 +57,8 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
 
     return (
         <Dialog open={open} modalType="modal">
-            <DialogSurface 
-                style={{ 
+            <DialogSurface
+                style={{
                     width: 800,
                     height: 600,
                     maxWidth: '90vw',
@@ -130,6 +134,16 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                         volume: d.volume ?? 0,
                                     })).reverse(); // oldest to newest
                                     const sr = computeSupportResistance(ohlcv, 15, 15);
+
+                                    // --- 52-day Moving Average ---
+                                    // Find the min and max date in the price data
+                                    const priceDates = data.map(d => d.date);
+                                    const minDate = priceDates[priceDates.length - 1];
+                                    const maxDate = priceDates[0];
+
+                                    // Filter MA points to only those within the price data date range
+                                    const filteredMA = ma52.filter(ma => ma.date >= minDate && ma.date <= maxDate);
+
                                     // Plot traces
                                     const traces: Plotly.Data[] = [
                                         {
@@ -212,6 +226,17 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                             hoverinfo: "none",
                                             showlegend: false,
                                         })),
+                                        // 52-day MA line (only for the range of available price data)
+                                        {
+                                            x: filteredMA.map(ma => new Date(ma.date)),
+                                            y: filteredMA.map(ma => ma.sma),
+                                            type: "scatter",
+                                            mode: "lines",
+                                            name: "52-day MA",
+                                            line: { color: "rgba(30,30,30,0.5)", width: 2 },
+                                            hovertemplate: `<b>Date:</b> %{x|%b %d}<br><b>52d MA:</b> $%{y:.2f}<extra></extra>`,
+                                            showlegend: true,
+                                        },
                                     ];
                                     return (
                                         <Plot
