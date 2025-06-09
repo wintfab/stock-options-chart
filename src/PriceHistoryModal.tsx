@@ -131,7 +131,7 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                     })).reverse(); // oldest to newest
                                     const sr = computeSupportResistance(ohlcv, 15, 15);
                                     // Plot traces
-                                    const traces = [
+                                    const traces: Plotly.Data[] = [
                                         {
                                             x: data.map(d => new Date(d.date)),
                                             y: data.map(d => d.close),
@@ -191,25 +191,25 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                             showlegend: true,
                                         },
                                         // Resistance levels
-                                        ...sr.resistances.map(lvl => ({
-                                            x: [data[data.length - 1 - lvl.index].date, data[0].date].map(d => new Date(d)),
+                                        ...sr.resistances.map((lvl): Plotly.Data => ({
+                                            x: [data[data.length - 1 - lvl.index].date, data[0].date].map((d: string) => new Date(d)),
                                             y: [lvl.price, lvl.price],
-                                            type: "scatter" as const,
-                                            mode: "lines" as const,
+                                            type: "scatter",
+                                            mode: "lines",
                                             name: "Resistance",
-                                            line: { color: "#FF0000", width: 2, dash: "dash" as const },
-                                            hoverinfo: "none" as const,
+                                            line: { color: "#FF0000", width: 2, dash: "dash" },
+                                            hoverinfo: "none",
                                             showlegend: false,
                                         })),
                                         // Support levels
-                                        ...sr.supports.map(lvl => ({
+                                        ...sr.supports.map((lvl): Plotly.Data => ({
                                             x: [data[data.length - 1 - lvl.index].date, data[0].date].map(d => new Date(d)),
                                             y: [lvl.price, lvl.price],
-                                            type: "scatter" as const,
-                                            mode: "lines" as const,
+                                            type: "scatter",
+                                            mode: "lines",
                                             name: "Support",
-                                            line: { color: "#233dee", width: 2, dash: "dot" as const },
-                                            hoverinfo: "none" as const,
+                                            line: { color: "#42ff00", width: 2, dash: "dot" },
+                                            hoverinfo: "none",
                                             showlegend: false,
                                         })),
                                     ];
