@@ -30,6 +30,7 @@ import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
 import TickerError from "./TickerError";
 import PriceHistoryModal from "./PriceHistoryModal";
+import LastCacheUpdateLabel from "./LastCacheUpdateLabel";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 import { TickerDataController } from "./TickerDataController";
 import { renderChartTitleHTML } from "./ChartTitle";
@@ -209,6 +210,7 @@ const App: React.FC = () => {
         closingPrice: number;
         priceChangePct?: number;
     } | null>(null);
+    const [lastCacheUpdate, setLastCacheUpdate] = useState<string | null>(null);
 
     // On mount, try to load API key from cache for today
     useEffect(() => {
@@ -244,6 +246,20 @@ const App: React.FC = () => {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [fullscreenChart]);
+
+    // On mount, check for last cache update
+    useEffect(() => {
+        const lastUpdate = localStorage.getItem('fmp_quote_cache_last_update');
+        if (lastUpdate) setLastCacheUpdate(lastUpdate);
+    }, []);
+
+    // After data is fully loaded, update last cache update state
+    useEffect(() => {
+        if (!loading && charts.length > 0) {
+            const lastUpdate = localStorage.getItem('fmp_quote_cache_last_update');
+            if (lastUpdate) setLastCacheUpdate(lastUpdate);
+        }
+    }, [loading, charts]);
 
     // Filtering logic for contracts/charts
     const filterContracts = (contracts: Contract[]): Contract[] => {
@@ -520,6 +536,7 @@ const App: React.FC = () => {
                         )}
                     </div>
                 </DragAndDropOverlay>
+                <LastCacheUpdateLabel lastCacheUpdate={lastCacheUpdate} />
             </div>
         </FluentProvider>
     );

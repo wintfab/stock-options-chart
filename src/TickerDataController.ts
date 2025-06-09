@@ -45,6 +45,8 @@ export class TickerDataController {
                 const fetchedTicket = await TickerDataController.fetchQuote(ticker, apiKey);
                 if (fetchedTicket.price !== 0 && fetchedTicket.changePct !== 0) {
                     localStorage.setItem(cacheKey, JSON.stringify({ date: today, price: fetchedTicket.price, changePct: fetchedTicket.changePct }));
+                    // Update global cache update key with the most recent time
+                    localStorage.setItem('fmp_quote_cache_last_update', new Date().toISOString());
                 }
                 return fetchedTicket;
             } catch (err) {
