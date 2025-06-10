@@ -68,7 +68,7 @@ const OfficeHeader: React.FC<OfficeHeaderProps> = ({ filter, setFilter, disabled
                     pointerEvents: "none",
                 }}
             >
-                Stock Options Analysis
+                Contracts Analysis
             </Title3>
             <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
                 <>

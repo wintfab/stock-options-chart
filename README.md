@@ -1,6 +1,6 @@
-# Stock Options Chart (Frontend)
+# Contracts Chart (Frontend)
 
-This is a TypeScript frontend-only application for visualizing stock options charts.
+This is a TypeScript frontend-only application for visualizing Contracts charts.
 
 ## Features
 
