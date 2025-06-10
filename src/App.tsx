@@ -470,18 +470,18 @@ const App: React.FC = () => {
                                             key={chart.ticker}
                                             className="chart-container"
                                             style={{
-                                                width: "min(900px, 98vw)", // Limit max width for legend, responsive
+                                                width: "min(900px, 98vw)",
                                                 minWidth: 320,
                                                 height: "400px",
-                                                margin: "0 auto 32px auto", // Add spacing between charts
+                                                margin: "0 auto 32px auto",
                                                 position: "relative",
                                                 display: "flex",
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                                 background: "#fff",
                                                 borderRadius: 8,
-                                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                                                 boxSizing: "border-box",
+                                                // boxShadow and transition removed, handled by CSS
                                             }}
                                         >
                                             <div

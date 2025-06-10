@@ -65,7 +65,13 @@ body {
     width: 85vw;
     min-width: 300;
     margin: 0 auto 20px auto;
+    transition: box-shadow 0.2s cubic-bezier(.4,0,.2,1);
 }
+
+.chart-container:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
 
 .charts-list {
     display: flex;
