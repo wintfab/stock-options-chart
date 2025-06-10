@@ -527,6 +527,15 @@ const App: React.FC = () => {
                                                     style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
                                                     useResizeHandler={true}
                                                     className="responsive-plot"
+                                                    config={{
+                                                        toImageButtonOptions: {
+                                                            filename: `${chart.ticker}_${getToday()}`,
+                                                            format: "png",
+                                                            width: 1200,
+                                                            height: 800,
+                                                            scale: 2,
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                         </div>

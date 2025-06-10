@@ -3,10 +3,13 @@ import { Dialog, DialogSurface, DialogBody, DialogTitle, DialogActions } from "@
 import { Button } from "@fluentui/react-components";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { TickerDataController } from "./TickerDataController";
-import ChartTitle from "./ChartTitle";
-import Plot from "react-plotly.js";
 import { calculateProbabilityCones } from "./ChartModels/ProbabilityCone";
 import { computeSupportResistance } from "./ChartModels/SupportResistance";
+import { getToday } from "./utils";
+
+import ChartTitle from "./ChartTitle";
+import Plot from "react-plotly.js";
+
 
 interface PriceHistoryModalProps {
     ticker: string;
@@ -262,7 +265,18 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
                                                 hovermode: "closest"
                                             }}
                                             style={{ width: "100%", height: "calc(100% - 16px)" }}
-                                            config={{ displayModeBar: false, responsive: true, staticPlot: false }}
+                                            config={{
+                                                responsive: true,
+                                                staticPlot: false,
+                                                toImageButtonOptions: {
+                                                    filename: `${ticker}_${getToday()}_price_history`,
+                                                    format: "png",
+                                                    width: 1200,
+                                                    height: 800,
+                                                    scale: 2,
+                                                }
+
+                                            }}
                                             useResizeHandler={true}
                                         />
                                     );
