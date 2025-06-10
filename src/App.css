@@ -182,3 +182,8 @@ h1 {
 .fullscreen-modal .responsive-plot {
     background: transparent !important;
 }
+
+.modebar-container {
+    top: 20px !important;
+    right: 20px !important;
+}
