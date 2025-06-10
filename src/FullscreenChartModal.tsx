@@ -4,6 +4,7 @@ import React from "react";
 import Plot from "react-plotly.js";
 import { Button } from "@fluentui/react-components";
 import { FullScreenMaximize24Regular } from "@fluentui/react-icons";
+import { getToday } from "./utils";
 
 interface FullscreenChartModalProps {
     fullscreenChart: any;
@@ -57,6 +58,15 @@ const FullscreenChartModal: React.FC<FullscreenChartModalProps> = ({ fullscreenC
                     style={{ width: "90vw", height: "90vh", minHeight: 500 }}
                     useResizeHandler={true}
                     className="responsive-plot"
+                    config={{
+                        toImageButtonOptions: {
+                            filename: `${fullscreenChart.ticker}_${getToday()}`,
+                            format: "png",
+                            width: 1200,
+                            height: 800,
+                            scale: 2,
+                        }
+                    }}
                 />
             </div>
         </div>
