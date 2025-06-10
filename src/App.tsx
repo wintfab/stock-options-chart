@@ -6,18 +6,8 @@ import {
     Button,
     Input,
     Label,
-    Link,
-    Menu,
-    MenuTrigger,
-    MenuPopover,
-    MenuList,
-    MenuItem,
+    Link
 } from "@fluentui/react-components";
-import {
-    MoreHorizontal24Regular,
-    GanttChart24Regular,
-    FullScreenMaximize24Regular,
-} from "@fluentui/react-icons";
 import type { BrandVariants } from "@fluentui/react-components";
 import {
     createLightTheme,
@@ -34,6 +24,7 @@ import LastCacheUpdateLabel from "./LastCacheUpdateLabel";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 import { TickerDataController } from "./TickerDataController";
 import { renderChartTitleHTML } from "./ChartTitle";
+import SelectionSidePanel from "./SelectionSidePanel";
 
 const API_KEY_CACHE_KEY = "fmp_api_key_cache";
 
@@ -211,6 +202,14 @@ const App: React.FC = () => {
         priceChangePct?: number;
     } | null>(null);
     const [lastCacheUpdate, setLastCacheUpdate] = useState<string | null>(null);
+    const [selectedPoint, setSelectedPoint] = useState<{
+        ticker: string;
+        type: string;
+        expDate: string;
+        strike: string;
+        diff: string;
+    } | null>(null);
+    const [sidePanelOpen, setSidePanelOpen] = useState(true);
 
     // On mount, try to load API key from cache for today
     useEffect(() => {
@@ -391,6 +390,20 @@ const App: React.FC = () => {
         await loadContractsData(text);
     };
 
+    // Helper to handle selection and always expand the side panel
+    const handleSelectPoint = (point: {
+        ticker: string;
+        type: string;
+        expDate: string;
+        strike: string;
+        diff: string;
+    }) => {
+        setSelectedPoint(point);
+        setSidePanelOpen(true); // Ensure panel is expanded on selection
+    };
+
+    const dataLoaded = charts.length > 0 && !loading && !tickerError;
+
     return (
         <FluentProvider theme={officeTheme} style={{ minHeight: "100vh" }}>
             <OfficeHeader filter={filter} setFilter={setFilter} disabled={!charts.length || !!tickerError} />
@@ -414,136 +427,124 @@ const App: React.FC = () => {
                         closingPrice={priceHistoryModal?.closingPrice || 0}
                         priceChangePct={priceHistoryModal?.priceChangePct}
                     />
-                    <div className="main-content">
-                        {tickerError ? (
-                            <TickerError
-                                tickers={tickerError.tickers}
-                                onRetry={() => lastContractsText && loadContractsData(lastContractsText)}
-                            />
-                        ) : (
-                            <>
-                                {!charts.length && (
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
+                        <div style={{ flex: 1, minWidth: 0, marginRight: dataLoaded && sidePanelOpen ? 340 : 60 }}>
+                            <div className="main-content">
+                                {tickerError ? (
+                                    <TickerError
+                                        tickers={tickerError.tickers}
+                                        onRetry={() => lastContractsText && loadContractsData(lastContractsText)}
+                                    />
+                                ) : (
                                     <>
-                                        <div style={{ marginBottom: 16 }}>
-                                            <Label htmlFor="api-key-input">
-                                                Financial Modeling{" "}
-                                                <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
-                                                    API Key
-                                                </Link>{" "}
-                                            </Label>
-                                            <Input
-                                                id="api-key-input"
-                                                type="text"
-                                                value={apiKey}
-                                                disabled={loading}
-                                                onChange={(_, data) => setApiKey(data.value)}
-                                                placeholder="Enter your FMP API key"
-                                                style={{ width: 320 }}
-                                            />
+                                        {!charts.length && (
+                                            <>
+                                                <div style={{ marginBottom: 16 }}>
+                                                    <Label htmlFor="api-key-input">
+                                                        Financial Modeling{" "}
+                                                        <Link href="https://site.financialmodelingprep.com/developer/docs/dashboard/">
+                                                            API Key
+                                                        </Link>{" "}
+                                                    </Label>
+                                                    <Input
+                                                        id="api-key-input"
+                                                        type="text"
+                                                        value={apiKey}
+                                                        disabled={loading}
+                                                        onChange={(_, data) => setApiKey(data.value)}
+                                                        placeholder="Enter your FMP API key"
+                                                        style={{ width: 320 }}
+                                                    />
+                                                </div>
+                                                <input
+                                                    id="file-input"
+                                                    type="file"
+                                                    accept=".txt"
+                                                    style={{ display: "none" }}
+                                                    onChange={handleFile}
+                                                />
+                                                <Button
+                                                    appearance="primary"
+                                                    onClick={() => document.getElementById("file-input")?.click()}
+                                                    disabled={loading}
+                                                    style={{
+                                                        marginBottom: 16,
+                                                        display: "block",
+                                                        marginLeft: "auto",
+                                                        marginRight: "auto",
+                                                    }}
+                                                >
+                                                    Upload Contracts
+                                                </Button>
+                                            </>
+                                        )}
+                                        {loading && <Loading />}
+                                        <div className="charts-list">
+                                            {charts.map((chart) => (
+                                                <div
+                                                    key={chart.ticker}
+                                                    className="chart-container"
+                                                    style={{
+                                                        width: "min(900px, 98vw)",
+                                                        minWidth: 320,
+                                                        height: "400px",
+                                                        margin: "0 auto 32px auto",
+                                                        position: "relative",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        background: "#fff",
+                                                        borderRadius: 8,
+                                                        boxSizing: "border-box",
+                                                    }}
+                                                >
+                                                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                        <Plot
+                                                            data={chart.plotData}
+                                                            layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
+                                                            style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
+                                                            useResizeHandler={true}
+                                                            className="responsive-plot"
+                                                            config={{
+                                                                toImageButtonOptions: {
+                                                                    filename: `${chart.ticker}_${getToday()}`,
+                                                                    format: "png",
+                                                                    width: 1200,
+                                                                    height: 800,
+                                                                    scale: 2,
+                                                                }
+                                                            }}
+                                                            onClick={(event) => {
+                                                                const pt = event.points[0];
+                                                                const [expDate, strike, diff] = Array.isArray(pt.customdata) ? pt.customdata : [];
+                                                                handleSelectPoint({
+                                                                    ticker: chart.ticker,
+                                                                    type: pt.data.name,
+                                                                    expDate,
+                                                                    strike,
+                                                                    diff
+                                                                });
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <input
-                                            id="file-input"
-                                            type="file"
-                                            accept=".txt"
-                                            style={{ display: "none" }}
-                                            onChange={handleFile}
-                                        />
-                                        <Button
-                                            appearance="primary"
-                                            onClick={() => document.getElementById("file-input")?.click()}
-                                            disabled={loading}
-                                            style={{
-                                                marginBottom: 16,
-                                                display: "block",
-                                                marginLeft: "auto",
-                                                marginRight: "auto",
-                                            }}
-                                        >
-                                            Upload Contracts
-                                        </Button>
                                     </>
                                 )}
-                                {loading && <Loading />}
-                                <div className="charts-list">
-                                    {charts.map((chart) => (
-                                        <div
-                                            key={chart.ticker}
-                                            className="chart-container"
-                                            style={{
-                                                width: "min(900px, 98vw)",
-                                                minWidth: 320,
-                                                height: "400px",
-                                                margin: "0 auto 32px auto",
-                                                position: "relative",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                background: "#fff",
-                                                borderRadius: 8,
-                                                boxSizing: "border-box",
-                                                // boxShadow and transition removed, handled by CSS
-                                            }}
-                                        >
-                                            <div
-                                                style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
-                                            >
-                                                <Menu>
-                                                    <MenuTrigger disableButtonEnhancement>
-                                                        <Button
-                                                            icon={<MoreHorizontal24Regular />}
-                                                            appearance="subtle"
-                                                            size="small"
-                                                        />
-                                                    </MenuTrigger>
-                                                    <MenuPopover>
-                                                        <MenuList>
-                                                            <MenuItem
-                                                                icon={<GanttChart24Regular />}
-                                                                onClick={() => {
-                                                                    // Use the chart object from the map callback
-                                                                    setPriceHistoryModal({
-                                                                        ticker: chart.ticker,
-                                                                        closingPrice: chart.closingPrice,
-                                                                        priceChangePct: chart.priceChangePct
-                                                                    });
-                                                                }}
-                                                            >
-                                                                Show Price History
-                                                            </MenuItem>
-                                                            <MenuItem
-                                                                icon={<FullScreenMaximize24Regular />}
-                                                                onClick={() => setFullscreenChart(chart)}
-                                                            >
-                                                                Show Full Screen
-                                                            </MenuItem>
-                                                        </MenuList>
-                                                    </MenuPopover>
-                                                </Menu>
-                                            </div>
-                                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                <Plot
-                                                    data={chart.plotData}
-                                                    layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
-                                                    style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
-                                                    useResizeHandler={true}
-                                                    className="responsive-plot"
-                                                    config={{
-                                                        toImageButtonOptions: {
-                                                            filename: `${chart.ticker}_${getToday()}`,
-                                                            format: "png",
-                                                            width: 1200,
-                                                            height: 800,
-                                                            scale: 2,
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
+                            </div>
+                        </div>
                     </div>
+                    {/* Side Panel */}
+                    {dataLoaded && (
+                        <SelectionSidePanel
+                            open={sidePanelOpen}
+                            onToggle={() => setSidePanelOpen((open) => !open)}
+                            selectedPoint={selectedPoint}
+                            onClearSelection={() => setSelectedPoint(null)}
+                            headerTop={56} // Match OfficeHeader height
+                        />
+                    )}
                 </DragAndDropOverlay>
                 <LastCacheUpdateLabel lastCacheUpdate={lastCacheUpdate} />
             </div>
