@@ -13,7 +13,7 @@ import {
 } from "@fluentui/react-components";
 import "./App.css";
 import OfficeHeader from "./OfficeHeader";
-import FullscreenChartModal from "./FullscreenChartModal";
+import FullscreenChart from "./FullscreenChart";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
 import TickerError from "./TickerError";
@@ -415,7 +415,7 @@ const App: React.FC = () => {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                 >
-                    <FullscreenChartModal
+                    <FullscreenChart
                         fullscreenChart={fullscreenChart}
                         onClose={() => setFullscreenChart(null)}
                     />

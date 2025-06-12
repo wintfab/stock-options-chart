@@ -6,12 +6,12 @@ import { Button } from "@fluentui/react-components";
 import { FullScreenMaximize24Regular } from "@fluentui/react-icons";
 import { getToday } from "./utils";
 
-interface FullscreenChartModalProps {
+interface FullscreenChartProps {
     fullscreenChart: any;
     onClose: () => void;
 }
 
-const FullscreenChartModal: React.FC<FullscreenChartModalProps> = ({ fullscreenChart, onClose }) => {
+const FullscreenChart: React.FC<FullscreenChartProps> = ({ fullscreenChart, onClose }) => {
     if (!fullscreenChart) return null;
     return (
         <div className="fullscreen-modal" onClick={onClose}>
@@ -44,7 +44,7 @@ const FullscreenChartModal: React.FC<FullscreenChartModalProps> = ({ fullscreenC
                         plot_bgcolor: "#181c24",
                         legend: {
                             ...fullscreenChart.layout.legend,
-                            bgcolor: "#a3a7ae",
+                            bgcolor: "#dfe3e8",
                         },
                         xaxis: {
                             ...fullscreenChart.layout.xaxis,
@@ -73,4 +73,4 @@ const FullscreenChartModal: React.FC<FullscreenChartModalProps> = ({ fullscreenC
     );
 };
 
-export default FullscreenChartModal;
+export default FullscreenChart;
