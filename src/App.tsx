@@ -17,7 +17,7 @@ import FullscreenChartModal from "./FullscreenChartModal";
 import DragAndDropOverlay from "./DragAndDropOverlay";
 import Loading from "./Loading";
 import TickerError from "./TickerError";
-import PriceHistoryModal from "./PriceHistoryModal";
+import PriceHistoryChart from "./PriceHistoryChart"
 import LastCacheUpdateLabel from "./LastCacheUpdateLabel";
 import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./utils";
 import { TickerDataController } from "./TickerDataController";
@@ -195,7 +195,7 @@ const App: React.FC = () => {
     const [filter, setFilter] = useState<string>("none");
     const [lastContractsText, setLastContractsText] = useState<string | null>(null);
     const [tickerError, setTickerError] = useState<null | { tickers: string[] }>(null);
-    const [priceHistoryModal, setPriceHistoryModal] = useState<{
+    const [priceHistoryChartState, setPriceHistoryChartState] = useState<{
         ticker: string;
         closingPrice: number;
         priceChangePct?: number;
@@ -419,13 +419,13 @@ const App: React.FC = () => {
                         fullscreenChart={fullscreenChart}
                         onClose={() => setFullscreenChart(null)}
                     />
-                    <PriceHistoryModal
-                        ticker={priceHistoryModal?.ticker || ""}
-                        open={!!priceHistoryModal}
-                        onClose={() => setPriceHistoryModal(null)}
+                    <PriceHistoryChart
+                        ticker={priceHistoryChartState?.ticker || ""}
+                        open={!!priceHistoryChartState}
+                        onClose={() => setPriceHistoryChartState(null)}
                         apiKey={apiKey}
-                        closingPrice={priceHistoryModal?.closingPrice || 0}
-                        priceChangePct={priceHistoryModal?.priceChangePct}
+                        closingPrice={priceHistoryChartState?.closingPrice || 0}
+                        priceChangePct={priceHistoryChartState?.priceChangePct}
                     />
                     <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
                         <div style={{ flex: 1, minWidth: 0, marginRight: dataLoaded && sidePanelOpen ? 340 : 60 }}>
@@ -485,7 +485,7 @@ const App: React.FC = () => {
                                                     key={chart.ticker}
                                                     chart={chart}
                                                     onShowPriceHistory={(chart) => {
-                                                        setPriceHistoryModal({
+                                                        setPriceHistoryChartState({
                                                             ticker: chart.ticker,
                                                             closingPrice: chart.closingPrice,
                                                             priceChangePct: chart.priceChangePct

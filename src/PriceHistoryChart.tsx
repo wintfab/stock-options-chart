@@ -11,7 +11,7 @@ import ChartTitle from "./ChartTitle";
 import Plot from "react-plotly.js";
 
 
-interface PriceHistoryModalProps {
+interface PriceHistoryChartProps {
     ticker: string;
     open: boolean;
     onClose: () => void;
@@ -27,7 +27,7 @@ function getLocalDateString() {
 
 const FORECAST_DAYS = 30;
 
-const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onClose, apiKey, closingPrice, priceChangePct }) => {
+const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ ticker, open, onClose, apiKey, closingPrice, priceChangePct }) => {
     // Update cache type to match fetchPriceHistory return type
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any[] | null>(null);
@@ -295,4 +295,4 @@ const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ ticker, open, onC
     );
 };
 
-export default PriceHistoryModal;
+export default PriceHistoryChart;
