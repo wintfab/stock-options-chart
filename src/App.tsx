@@ -1,19 +1,11 @@
 // Copyright (c) 2025 fwinter. All rights reserved.
 
 import React, { useState, useEffect } from "react";
-import Plot from "react-plotly.js";
 import {
     Button,
     Input,
     Label,
-    Link,
-    Menu,
-    MenuItem,
-    MenuList,
-    MenuPopover,
-    MenuTrigger
-} from "@fluentui/react-components";
-import { GanttChart24Regular, FullScreenMaximize24Regular, MoreHorizontal24Regular } from "@fluentui/react-icons";
+    Link} from "@fluentui/react-components";
 import type { BrandVariants } from "@fluentui/react-components";
 import {
     createLightTheme,
@@ -31,6 +23,7 @@ import { getToday, parseContractLine, calculateDaysUntilExpiration } from "./uti
 import { TickerDataController } from "./TickerDataController";
 import { renderChartTitleHTML } from "./ChartTitle";
 import SelectionSidePanel from "./SelectionSidePanel";
+import ChartCard from "./ChartCard";
 
 const API_KEY_CACHE_KEY = "fmp_api_key_cache";
 
@@ -488,89 +481,19 @@ const App: React.FC = () => {
                                         {loading && <Loading />}
                                         <div className="charts-list">
                                             {charts.map((chart) => (
-                                                <div
+                                                <ChartCard
                                                     key={chart.ticker}
-                                                    className="chart-container"
-                                                    style={{
-                                                        width: "min(900px, 98vw)",
-                                                        minWidth: 320,
-                                                        height: "400px",
-                                                        margin: "0 auto 32px auto",
-                                                        position: "relative",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        background: "#fff",
-                                                        borderRadius: 8,
-                                                        boxSizing: "border-box",
+                                                    chart={chart}
+                                                    onShowPriceHistory={(chart) => {
+                                                        setPriceHistoryModal({
+                                                            ticker: chart.ticker,
+                                                            closingPrice: chart.closingPrice,
+                                                            priceChangePct: chart.priceChangePct
+                                                        });
                                                     }}
-                                                >
-                                                    <div
-                                                style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
-                                            >
-                                                <Menu>
-                                                    <MenuTrigger disableButtonEnhancement>
-                                                        <Button
-                                                            icon={<MoreHorizontal24Regular />}
-                                                            appearance="subtle"
-                                                            size="small"
-                                                        />
-                                                    </MenuTrigger>
-                                                    <MenuPopover>
-                                                        <MenuList>
-                                                            <MenuItem
-                                                                icon={<GanttChart24Regular />}
-                                                                onClick={() => {
-                                                                    // Use the chart object from the map callback
-                                                                    setPriceHistoryModal({
-                                                                        ticker: chart.ticker,
-                                                                        closingPrice: chart.closingPrice,
-                                                                        priceChangePct: chart.priceChangePct
-                                                                    });
-                                                                }}
-                                                            >
-                                                                Show Price History
-                                                            </MenuItem>
-                                                            <MenuItem
-                                                                icon={<FullScreenMaximize24Regular />}
-                                                                onClick={() => setFullscreenChart(chart)}
-                                                            >
-                                                                Show Full Screen
-                                                            </MenuItem>
-                                                        </MenuList>
-                                                    </MenuPopover>
-                                                </Menu>
-                                            </div>
-                                                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                                        <Plot
-                                                            data={chart.plotData}
-                                                            layout={{ ...chart.layout, autosize: true, width: undefined, height: undefined }}
-                                                            style={{ width: "100%", height: "100%", minHeight: 400, marginTop: -10 }}
-                                                            useResizeHandler={true}
-                                                            className="responsive-plot"
-                                                            config={{
-                                                                toImageButtonOptions: {
-                                                                    filename: `${chart.ticker}_${getToday()}`,
-                                                                    format: "png",
-                                                                    width: 1200,
-                                                                    height: 800,
-                                                                    scale: 2,
-                                                                }
-                                                            }}
-                                                            onClick={(event) => {
-                                                                const pt = event.points[0];
-                                                                const [expDate, strike, diff] = Array.isArray(pt.customdata) ? pt.customdata : [];
-                                                                handleSelectPoint({
-                                                                    ticker: chart.ticker,
-                                                                    type: pt.data.name,
-                                                                    expDate,
-                                                                    strike,
-                                                                    diff
-                                                                });
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
+                                                    onShowFullScreen={setFullscreenChart}
+                                                    onSelectPoint={handleSelectPoint}
+                                                />
                                             ))}
                                         </div>
                                     </>
