@@ -102,7 +102,7 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ ticker, open, onC
         <Dialog open={open} modalType="modal">
             <DialogSurface
                 style={{
-                    width: 800,
+                    width: 1000,
                     height: 640, // increased from 600
                     maxWidth: '90vw',
                     maxHeight: '96vh' // increased from 90vh
@@ -325,7 +325,6 @@ const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({ ticker, open, onC
                                                         height: 800,
                                                         scale: 2,
                                                     }
-
                                                 }}
                                                 useResizeHandler={true}
                                             />
