@@ -6,8 +6,14 @@ import {
     Button,
     Input,
     Label,
-    Link
+    Link,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger
 } from "@fluentui/react-components";
+import { GanttChart24Regular, FullScreenMaximize24Regular, MoreHorizontal24Regular } from "@fluentui/react-icons";
 import type { BrandVariants } from "@fluentui/react-components";
 import {
     createLightTheme,
@@ -360,6 +366,7 @@ const App: React.FC = () => {
                     tickerData[ticker].changePct,
                 ),
             );
+        setSidePanelOpen(false); // Close panel by default when data is loaded
         setCharts(chartData);
         setLoading(false);
     };
@@ -498,6 +505,42 @@ const App: React.FC = () => {
                                                         boxSizing: "border-box",
                                                     }}
                                                 >
+                                                    <div
+                                                style={{ position: "absolute", top: 8, left: 8, zIndex: 2 }}
+                                            >
+                                                <Menu>
+                                                    <MenuTrigger disableButtonEnhancement>
+                                                        <Button
+                                                            icon={<MoreHorizontal24Regular />}
+                                                            appearance="subtle"
+                                                            size="small"
+                                                        />
+                                                    </MenuTrigger>
+                                                    <MenuPopover>
+                                                        <MenuList>
+                                                            <MenuItem
+                                                                icon={<GanttChart24Regular />}
+                                                                onClick={() => {
+                                                                    // Use the chart object from the map callback
+                                                                    setPriceHistoryModal({
+                                                                        ticker: chart.ticker,
+                                                                        closingPrice: chart.closingPrice,
+                                                                        priceChangePct: chart.priceChangePct
+                                                                    });
+                                                                }}
+                                                            >
+                                                                Show Price History
+                                                            </MenuItem>
+                                                            <MenuItem
+                                                                icon={<FullScreenMaximize24Regular />}
+                                                                onClick={() => setFullscreenChart(chart)}
+                                                            >
+                                                                Show Full Screen
+                                                            </MenuItem>
+                                                        </MenuList>
+                                                    </MenuPopover>
+                                                </Menu>
+                                            </div>
                                                     <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                                         <Plot
                                                             data={chart.plotData}
